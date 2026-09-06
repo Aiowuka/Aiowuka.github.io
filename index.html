@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Aiowuka — research, engineering, and projects." />
+  <title>Aiowuka</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f4ef;
+      --text: #171717;
+      --muted: #6f6b63;
+      --line: #d9d5cc;
+      --accent: #202020;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+    .wrap {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    nav {
+      display: flex;
+      gap: 24px;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    nav a {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    nav a:hover { color: var(--text); }
+    main {
+      flex: 1;
+      display: grid;
+      align-items: center;
+      padding: 88px 0 104px;
+    }
+    .eyebrow {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    h1 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(56px, 10vw, 132px);
+      line-height: 0.9;
+      letter-spacing: -0.065em;
+      font-weight: 650;
+    }
+    .intro {
+      margin: 40px 0 0;
+      max-width: 650px;
+      color: var(--muted);
+      font-size: clamp(18px, 2vw, 24px);
+      line-height: 1.5;
+      letter-spacing: -0.02em;
+    }
+    .links {
+      margin-top: 44px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 11px 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 14px;
+      transition: 140ms ease;
+    }
+    .pill:hover {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 24px 0 30px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 640px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      header { padding: 20px 0; }
+      nav { gap: 14px; }
+      nav a:nth-child(2) { display: none; }
+      main { padding: 64px 0 76px; }
+      h1 { font-size: clamp(54px, 22vw, 86px); }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="brand" href="/">AIowuka</a>
+      <nav aria-label="Primary">
+        <a href="https://github.com/Aiowuka">GitHub</a>
+        <a href="#work">Work</a>
+        <a href="mailto:1304889335@qq.com">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section>
+        <p class="eyebrow">Research · Engineering · Intelligence</p>
+        <h1>AIowuka.</h1>
+        <p class="intro">
+          Exploring intelligent systems, autonomous agents, collective intelligence, robotics, and the ideas that connect them.
+        </p>
+        <div class="links" id="work">
+          <a class="pill" href="https://github.com/Aiowuka">GitHub ↗</a>
+          <a class="pill" href="https://github.com/Aiowuka/ai-research">Research ↗</a>
+          <a class="pill" href="https://github.com/Aiowuka/UAV-Dachuang">UAV ↗</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 AIowuka</span>
+      <span>aiowuka.me</span>
+    </footer>
+  </div>
+</body>
+</html>
