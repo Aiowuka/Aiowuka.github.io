@@ -1,420 +1,278 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="AIowuka — Flight Control student at Nanjing University of Aeronautics and Astronautics. Research, engineering, autonomous systems, and selected personal work." />
-  <meta name="theme-color" content="#f2efe8" />
-  <title>AIowuka — Flight Log</title>
+  <meta name="description" content="AIowuka — 南京航空航天大学飞控专业学生。关于学习、研究、照片、音乐与生活。" />
+  <meta name="theme-color" content="#fbfaf7" />
+  <title>AIowuka</title>
   <style>
     :root {
-      --bg: #f2efe8;
-      --paper: #f8f6f1;
-      --text: #191a18;
-      --muted: #74746d;
-      --faint: #a8a79f;
-      --line: rgba(25, 26, 24, .15);
-      --line-soft: rgba(25, 26, 24, .08);
-      --accent: #1d4d3b;
-      --max: 1180px;
+      --bg: #fbfaf7;
+      --text: #1f1f1d;
+      --muted: #77746d;
+      --line: #e5e1d9;
+      --link: #2c4f44;
+      --max: 760px;
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      min-height: 100vh;
-      background:
-        linear-gradient(to right, transparent 0, transparent calc(50% - 1px), var(--line-soft) 50%, transparent calc(50% + 1px)),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     a { color: inherit; text-decoration: none; }
-    .shell { width: min(var(--max), calc(100% - 48px)); margin: 0 auto; }
+    a:hover { color: var(--link); }
+
+    .page {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+    }
 
     header {
-      height: 78px;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 30px 0 24px;
       border-bottom: 1px solid var(--line);
     }
 
-    .brand {
-      font-size: 15px;
-      font-weight: 700;
+    .name {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 22px;
+      font-weight: 600;
       letter-spacing: -.02em;
-    }
-
-    .logmark {
-      color: var(--faint);
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
     }
 
     nav {
-      justify-self: end;
       display: flex;
-      gap: 22px;
-      font-size: 13px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 18px;
       color: var(--muted);
-    }
-    nav a:hover { color: var(--text); }
-
-    .hero {
-      min-height: 78vh;
-      display: grid;
-      grid-template-columns: 1.45fr .55fr;
-      gap: 56px;
-      align-items: end;
-      padding: 96px 0 78px;
-      border-bottom: 1px solid var(--line);
+      font-size: 13px;
     }
 
-    .hero-kicker,
-    .section-index,
-    .meta-label {
-      color: var(--faint);
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-    }
+    main { padding: 74px 0 24px; }
+
+    .intro { padding-bottom: 78px; }
 
     h1 {
-      margin: 18px 0 30px;
-      font-size: clamp(72px, 12vw, 164px);
-      line-height: .82;
-      letter-spacing: -.075em;
-      font-weight: 620;
+      margin: 0 0 28px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      font-size: clamp(52px, 10vw, 78px);
+      line-height: 1;
+      letter-spacing: -.055em;
     }
 
-    .hero-copy {
-      max-width: 760px;
-      margin: 0;
-      font-size: clamp(20px, 2.2vw, 30px);
+    .hello {
+      margin: 0 0 22px;
+      font-size: clamp(24px, 4vw, 34px);
       line-height: 1.42;
       letter-spacing: -.025em;
     }
-    .hero-copy .muted { color: var(--muted); }
 
-    .hero-aside {
-      align-self: stretch;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      border-left: 1px solid var(--line);
-      padding-left: 26px;
-    }
-
-    .coord {
-      color: var(--muted);
-      font: 12px/1.8 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    }
-    .coord strong { color: var(--text); font-weight: 500; }
-
-    section.block {
-      display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 42px;
-      padding: 82px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .section-title {
-      margin: 9px 0 0;
-      font-size: 18px;
-      font-weight: 540;
-      letter-spacing: -.02em;
-    }
-
-    .about-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 70px;
-    }
-
-    .about-text {
+    .intro-copy {
       margin: 0;
-      font-size: clamp(24px, 3vw, 38px);
-      line-height: 1.32;
-      letter-spacing: -.035em;
+      max-width: 680px;
+      color: #4e4c47;
+      font-size: 17px;
+      line-height: 1.9;
     }
 
-    .fact-list { border-top: 1px solid var(--line); }
-    .fact {
-      display: grid;
-      grid-template-columns: 110px 1fr;
-      gap: 16px;
-      padding: 15px 0;
-      border-bottom: 1px solid var(--line-soft);
-      font-size: 13px;
+    .intro-copy .en {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
     }
-    .fact span:first-child { color: var(--faint); }
 
-    .now-list { border-top: 1px solid var(--line); }
-    .now-row {
-      display: grid;
-      grid-template-columns: 1.25fr .55fr .2fr;
-      gap: 20px;
-      padding: 22px 0;
-      border-bottom: 1px solid var(--line);
+    section {
+      padding: 46px 0 52px;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: flex;
       align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
     }
-    .now-name {
-      font-size: clamp(21px, 2.5vw, 30px);
+
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 500;
       letter-spacing: -.025em;
     }
-    .now-desc {
+
+    .section-en,
+    .date {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .02em;
+    }
+
+    .prose {
+      display: grid;
+      gap: 20px;
+    }
+
+    .prose p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.9;
+    }
+
+    .prose .en {
       color: var(--muted);
       font-size: 14px;
-      line-height: 1.5;
-    }
-    .status {
-      justify-self: end;
-      color: var(--accent);
-      font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      white-space: nowrap;
+      line-height: 1.8;
+      margin-top: -10px;
     }
 
-    .work-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .work-card {
-      min-height: 270px;
-      padding: 24px;
-      background: rgba(248, 246, 241, .62);
-      border: 1px solid var(--line);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform .18s ease, background .18s ease;
-    }
-    .work-card:hover { transform: translateY(-3px); background: var(--paper); }
-    .work-top { display: flex; justify-content: space-between; gap: 20px; }
-    .work-num { color: var(--faint); font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .work-type { color: var(--muted); font-size: 12px; }
-    .work-card h3 {
-      margin: 50px 0 12px;
-      max-width: 440px;
-      font-size: clamp(26px, 3vw, 40px);
-      line-height: 1.03;
-      letter-spacing: -.045em;
-      font-weight: 560;
-    }
-    .work-card p { margin: 0; max-width: 430px; color: var(--muted); font-size: 14px; line-height: 1.55; }
-
-    .life-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 18px;
-    }
-    .placeholder {
-      min-height: 300px;
-      border: 1px dashed rgba(25, 26, 24, .25);
-      display: flex;
-      align-items: flex-end;
-      padding: 22px;
-      color: var(--muted);
-      background: rgba(248, 246, 241, .35);
-    }
-    .placeholder strong { color: var(--text); display: block; font-weight: 520; margin-bottom: 6px; }
-    .music { min-height: 300px; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; border: 1px solid var(--line); background: rgba(248, 246, 241, .62); }
-    .music-note { font-size: 46px; line-height: 1; }
-    .music p { margin: 0; color: var(--muted); line-height: 1.6; }
-
-    .privacy-note {
+    .now-list {
+      list-style: none;
+      padding: 0;
       margin: 0;
-      max-width: 780px;
-      font-size: clamp(24px, 3vw, 36px);
-      line-height: 1.35;
-      letter-spacing: -.03em;
     }
-    .privacy-note span { color: var(--muted); }
+
+    .now-list li {
+      padding: 15px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .now-list li:first-child { border-top: 1px solid var(--line); }
+    .now-list span { color: var(--muted); }
+
+    .quiet {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 22px;
+      margin-top: 22px;
+      font-size: 14px;
+    }
+
+    .links a {
+      border-bottom: 1px solid #bdb8ae;
+      padding-bottom: 2px;
+    }
 
     footer {
-      min-height: 190px;
-      padding: 42px 0 30px;
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
+      gap: 20px;
+      padding: 28px 0 40px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
-    }
-    .footer-top { display: flex; justify-content: space-between; gap: 24px; }
-    .footer-links { display: flex; gap: 20px; font-size: 13px; }
-    .footer-links a:hover { color: var(--text); }
-    .footer-bottom { display: flex; justify-content: space-between; gap: 20px; font-size: 12px; }
-
-    @media (max-width: 860px) {
-      body { background: var(--bg); }
-      .shell { width: min(100% - 28px, var(--max)); }
-      header { grid-template-columns: 1fr auto; }
-      .logmark { display: none; }
-      nav { gap: 14px; }
-      .hero { grid-template-columns: 1fr; min-height: auto; padding: 74px 0 56px; }
-      .hero-aside { border-left: 0; border-top: 1px solid var(--line); padding: 20px 0 0; }
-      section.block { grid-template-columns: 1fr; gap: 30px; padding: 62px 0; }
-      .about-grid, .life-grid { grid-template-columns: 1fr; gap: 28px; }
-      .now-row { grid-template-columns: 1fr auto; }
-      .now-desc { grid-column: 1 / -1; }
-      .work-grid { grid-template-columns: 1fr; }
+      font-size: 12px;
     }
 
-    @media (max-width: 560px) {
-      header { height: 66px; }
-      nav a:nth-child(2) { display: none; }
-      h1 { font-size: clamp(64px, 23vw, 104px); }
-      .hero-copy { font-size: 20px; }
-      .fact { grid-template-columns: 90px 1fr; }
-      .footer-top, .footer-bottom { flex-direction: column; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #171716;
+        --text: #efede8;
+        --muted: #9d9991;
+        --line: #34322f;
+        --link: #a9c7bb;
+      }
+      .intro-copy { color: #c9c5bd; }
+      .links a { border-bottom-color: #5c5852; }
+    }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 28px, var(--max)); }
+      header { align-items: flex-start; padding-top: 22px; }
+      nav { gap: 10px 14px; font-size: 12px; }
+      main { padding-top: 54px; }
+      .intro { padding-bottom: 60px; }
+      section { padding: 38px 0 44px; }
+      footer { flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
+  <div class="page">
     <header>
-      <a class="brand" href="/">AIowuka</a>
-      <div class="logmark">Flight Log · Personal Index</div>
-      <nav aria-label="Primary">
-        <a href="#now">Now</a>
-        <a href="#work">Work</a>
-        <a href="https://github.com/Aiowuka" target="_blank" rel="noreferrer">GitHub ↗</a>
+      <a class="name" href="/">AIowuka</a>
+      <nav aria-label="主导航">
+        <a href="#about">关于 / About</a>
+        <a href="#now">近况 / Now</a>
+        <a href="#notes">随笔 / Notes</a>
+        <a href="#life">生活 / Life</a>
       </nav>
     </header>
 
     <main>
-      <section class="hero">
-        <div>
-          <div class="hero-kicker">Callsign / AIowuka</div>
-          <h1>AIowuka.</h1>
-          <p class="hero-copy">
-            Flight Control student at <strong>Nanjing University of Aeronautics and Astronautics</strong>.
-            <span class="muted">Exploring intelligent systems, autonomous agents, collective intelligence, and things that fly.</span>
-          </p>
-        </div>
-        <aside class="hero-aside">
-          <div class="coord">
-            <div><strong>BASE</strong> · Nanjing, China</div>
-            <div><strong>FIELD</strong> · Flight Control</div>
-            <div><strong>STATUS</strong> · Learning / Building</div>
-            <div><strong>UPDATED</strong> · 2026.09</div>
-          </div>
-        </aside>
-      </section>
-
-      <section class="block" id="about">
-        <div>
-          <div class="section-index">01 / Identity</div>
-          <h2 class="section-title">About</h2>
-        </div>
-        <div class="about-grid">
-          <p class="about-text">
-            I use <strong>AIowuka</strong> as my public name. I study flight control at NUAA and spend much of my time moving between AI, autonomous systems, research, and engineering.
-          </p>
-          <div class="fact-list">
-            <div class="fact"><span>School</span><span>南京航空航天大学 · NUAA</span></div>
-            <div class="fact"><span>Major</span><span>Flight Control / 飞控</span></div>
-            <div class="fact"><span>Focus</span><span>AI · Agents · Autonomy · Robotics</span></div>
-            <div class="fact"><span>Public ID</span><span>AIowuka</span></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="block" id="now">
-        <div>
-          <div class="section-index">02 / Current</div>
-          <h2 class="section-title">Now</h2>
-        </div>
-        <div class="now-list">
-          <div class="now-row">
-            <div class="now-name">Collective Intelligence</div>
-            <div class="now-desc">Exploring how groups of agents retain, combine, and reorganize capability under open-ended problem spaces.</div>
-            <div class="status">Exploring</div>
-          </div>
-          <div class="now-row">
-            <div class="now-name">Autonomous UAV Systems</div>
-            <div class="now-desc">Building and learning across perception, control, embodied agents, and real-world autonomous flight systems.</div>
-            <div class="status">Building</div>
-          </div>
-          <div class="now-row">
-            <div class="now-name">AI-native Tools</div>
-            <div class="now-desc">Experimenting with software where AI is part of the working interface rather than an extra feature.</div>
-            <div class="status">Building</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="block" id="work">
-        <div>
-          <div class="section-index">03 / Selected</div>
-          <h2 class="section-title">Public Work</h2>
-        </div>
-        <div class="work-grid">
-          <a class="work-card" href="https://github.com/Aiowuka/UAV-Dachuang" target="_blank" rel="noreferrer">
-            <div class="work-top"><span class="work-num">W-01</span><span class="work-type">Open project ↗</span></div>
-            <div>
-              <h3>UAV Systems</h3>
-              <p>Selected work around unmanned aerial systems, sensing, mapping, and autonomous-system engineering.</p>
-            </div>
-          </a>
-          <a class="work-card" href="https://github.com/Aiowuka" target="_blank" rel="noreferrer">
-            <div class="work-top"><span class="work-num">W-02</span><span class="work-type">GitHub ↗</span></div>
-            <div>
-              <h3>Code & Experiments</h3>
-              <p>Public repositories, engineering experiments, and things I choose to make visible as they mature.</p>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section class="block" id="life">
-        <div>
-          <div class="section-index">04 / Personal</div>
-          <h2 class="section-title">Life</h2>
-        </div>
-        <div class="life-grid">
-          <div class="placeholder">
-            <div><strong>Photo log</strong>Reserved for photographs I choose to publish.</div>
-          </div>
-          <div class="music">
-            <div class="music-note">♫</div>
-            <p><strong>Listening lately</strong><br />Music, albums, and sounds will live here — selectively, not as a full listening history.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="block" id="boundary">
-        <div>
-          <div class="section-index">05 / Boundary</div>
-          <h2 class="section-title">Public by choice</h2>
-        </div>
-        <p class="privacy-note">
-          This site is my public surface. <span>It shows selected identity, work, and progress — not my private workspace, raw notes, or unfinished internal records.</span>
+      <div class="intro" id="about">
+        <h1>AIowuka</h1>
+        <p class="hello">你好，我是 AIowuka。<br />Hi, I’m AIowuka.</p>
+        <p class="intro-copy">
+          南京航空航天大学飞控专业学生。我喜欢 AI、Agent、无人系统，也喜欢把一些还没有想明白的问题慢慢做成东西。
+          <span class="en">I study Flight Control at Nanjing University of Aeronautics and Astronautics. I’m interested in AI, agents, autonomous systems, and turning unfinished ideas into things I can explore and build.</span>
         </p>
+      </div>
+
+      <section id="now">
+        <div class="section-head">
+          <h2>最近</h2>
+          <div><span class="section-en">Now</span> · <span class="date">2026.09</span></div>
+        </div>
+        <ul class="now-list">
+          <li>在研究 AI、Agent 与群体智能。<br /><span>Exploring AI, agents, and collective intelligence.</span></li>
+          <li>在做一些和无人机、飞行控制、真实世界自主系统有关的事情。<br /><span>Working on UAVs, flight control, and autonomous systems in the real world.</span></li>
+          <li>也在继续学习、写东西，以及整理那些值得长期留下来的想法。<br /><span>Learning, writing, and keeping the ideas that feel worth returning to.</span></li>
+        </ul>
+      </section>
+
+      <section id="notes">
+        <div class="section-head">
+          <h2>随笔</h2>
+          <span class="section-en">Notes</span>
+        </div>
+        <div class="prose">
+          <p>这里还没有正式文章。以后会放一些研究过程、学习记录，以及偶尔想写下来的东西。</p>
+          <p class="en">No formal posts yet. This will eventually hold research notes, things I learn, and occasional thoughts I want to keep.</p>
+        </div>
+      </section>
+
+      <section id="life">
+        <div class="section-head">
+          <h2>生活</h2>
+          <span class="section-en">Life</span>
+        </div>
+        <div class="prose">
+          <p>以后这里会有我自己挑选的照片、最近在听的音乐，也可能有一些旅行和日常。</p>
+          <p class="en">Selected photos, music I’ve been listening to, and perhaps a little travel and everyday life will live here over time.</p>
+        </div>
+        <div class="links">
+          <a href="https://github.com/Aiowuka" target="_blank" rel="noreferrer">GitHub ↗</a>
+        </div>
       </section>
     </main>
 
     <footer>
-      <div class="footer-top">
-        <div class="brand">AIowuka</div>
-        <div class="footer-links">
-          <a href="#about">About</a>
-          <a href="#now">Now</a>
-          <a href="https://github.com/Aiowuka" target="_blank" rel="noreferrer">GitHub ↗</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 AIowuka</span>
-        <span>aiowuka.me · Public frontstage</span>
-      </div>
+      <span>AIowuka · 南京航空航天大学 / NUAA</span>
+      <span>aiowuka.me</span>
     </footer>
   </div>
 </body>
