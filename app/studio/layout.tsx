@@ -1,9 +1,15 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { currentProfile } from '@/lib/access'
 import './studio.css'
 import './studio-extras.css'
+
+export const metadata: Metadata = {
+  title: 'Studio',
+  robots: { index: false, follow: false, noarchive: true, nocache: true },
+}
 
 const studioNav = [
   ['Overview', '/studio'],
