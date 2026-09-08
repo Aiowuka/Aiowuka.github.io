@@ -7,15 +7,26 @@ import {
   revokeContentAccess,
   revokePageAccess,
 } from '../actions'
+import { grantMediaAccess, revokeMediaAccess } from './actions'
 
 export default async function StudioAccess() {
   const supabase = await createClient()
-  const [{ data: profiles }, { data: content }, { data: pages }, { data: contentGrants }, { data: pageGrants }] = await Promise.all([
+  const [
+    { data: profiles },
+    { data: content },
+    { data: pages },
+    { data: media },
+    { data: contentGrants },
+    { data: pageGrants },
+    { data: mediaGrants },
+  ] = await Promise.all([
     supabase.from('profiles').select('id,email,display_name,role,approved,created_at').order('created_at', { ascending: false }),
     supabase.from('content_items').select('id,title,slug,content_type,visibility').eq('visibility', 'selected').order('updated_at', { ascending: false }),
     supabase.from('pages').select('id,title,slug,visibility').eq('visibility', 'selected').order('sort_order'),
+    supabase.from('media_assets').select('id,title,file_name,mime_type,visibility').eq('visibility', 'selected').order('created_at', { ascending: false }),
     supabase.from('content_access').select('content_id,user_id'),
     supabase.from('page_access').select('page_id,user_id'),
+    supabase.from('media_access').select('media_id,user_id'),
   ])
 
   const members = (profiles ?? []).filter((p) => p.role !== 'owner')
@@ -23,7 +34,7 @@ export default async function StudioAccess() {
 
   return (
     <>
-      <header className="studio-header"><p className="micro-label">AUTHORIZATION</p><h1>Access</h1><p>登录只证明身份。MEMBER 由你批准，SELECTED 再针对具体页面或内容逐人授权。</p></header>
+      <header className="studio-header"><p className="micro-label">AUTHORIZATION</p><h1>Access</h1><p>登录只证明身份。MEMBER 由你批准，SELECTED 再针对具体页面、内容或媒体逐人授权。</p></header>
 
       <section className="studio-section">
         <div className="studio-section-head"><div><p className="micro-label">MEMBERS</p><h2>People</h2></div><span className="studio-status">{approved.length} approved · {members.length - approved.length} pending</span></div>
@@ -69,6 +80,23 @@ export default async function StudioAccess() {
                 const allowed = (pageGrants ?? []).some((g) => g.page_id === page.id && g.user_id === person.id)
                 const action = allowed ? revokePageAccess : grantPageAccess
                 return <form action={action} key={person.id}><input type="hidden" name="page_id" value={page.id} /><input type="hidden" name="user_id" value={person.id} /><span>{person.display_name || person.email}</span><button type="submit">{allowed ? 'Revoke' : 'Allow'}</button></form>
+              })}
+            </div>
+          </article>
+        ))}
+      </section>
+
+      <section className="studio-section">
+        <div className="studio-section-head"><div><p className="micro-label">SELECTED MEDIA</p><h2>Media grants</h2></div></div>
+        {(media ?? []).length === 0 ? <div className="studio-empty">没有 SELECTED 媒体。把某张图片或文件的 visibility 改成 selected 后会出现在这里。</div> : null}
+        {(media ?? []).map((asset) => (
+          <article className="studio-grant-card" key={asset.id}>
+            <div><strong>{asset.title || asset.file_name}</strong><span>{asset.mime_type || 'file'}</span></div>
+            <div className="studio-grant-people">
+              {approved.map((person) => {
+                const allowed = (mediaGrants ?? []).some((g) => g.media_id === asset.id && g.user_id === person.id)
+                const action = allowed ? revokeMediaAccess : grantMediaAccess
+                return <form action={action} key={person.id}><input type="hidden" name="media_id" value={asset.id} /><input type="hidden" name="user_id" value={person.id} /><span>{person.display_name || person.email}</span><button type="submit">{allowed ? 'Revoke' : 'Allow'}</button></form>
               })}
             </div>
           </article>
