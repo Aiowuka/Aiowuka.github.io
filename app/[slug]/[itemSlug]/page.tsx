@@ -62,7 +62,7 @@ export default async function ContentDetailPage({ params }: ArticleProps) {
         </div>
         <h1>{item.title}</h1>
         {item.summary ? <p className="article-lead">{item.summary}</p> : null}
-        {item.tags?.length ? <div className="article-tags">{item.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div> : null}
+        {item.tags?.length ? <div className="article-tags">{item.tags.map((tag) => <Link href={`/${slug}?tag=${encodeURIComponent(tag)}`} key={tag}>#{tag}</Link>)}</div> : null}
         {cover ? (
           <figure className="article-cover">
             <img src={cover.url} alt={cover.alt_text || cover.title || item.title} />
