@@ -10,6 +10,12 @@ function text(formData: FormData, key: string) {
   return value
 }
 
+function refreshAccess() {
+  revalidatePath('/')
+  revalidatePath('/studio/access')
+  revalidatePath('/private')
+}
+
 export async function grantMediaAccess(formData: FormData) {
   const { claims } = await requireOwner()
   const supabase = await createClient()
@@ -20,8 +26,7 @@ export async function grantMediaAccess(formData: FormData) {
     { onConflict: 'media_id,user_id' },
   )
   if (error) throw error
-  revalidatePath('/studio/access')
-  revalidatePath('/private')
+  refreshAccess()
 }
 
 export async function revokeMediaAccess(formData: FormData) {
@@ -31,6 +36,28 @@ export async function revokeMediaAccess(formData: FormData) {
     .eq('media_id', text(formData, 'media_id'))
     .eq('user_id', text(formData, 'user_id'))
   if (error) throw error
-  revalidatePath('/studio/access')
-  revalidatePath('/private')
+  refreshAccess()
+}
+
+export async function grantBlockAccess(formData: FormData) {
+  const { claims } = await requireOwner()
+  const supabase = await createClient()
+  const blockId = text(formData, 'block_id')
+  const userId = text(formData, 'user_id')
+  const { error } = await supabase.from('block_access').upsert(
+    { block_id: blockId, user_id: userId, created_by: String(claims!.sub) },
+    { onConflict: 'block_id,user_id' },
+  )
+  if (error) throw error
+  refreshAccess()
+}
+
+export async function revokeBlockAccess(formData: FormData) {
+  await requireOwner()
+  const supabase = await createClient()
+  const { error } = await supabase.from('block_access').delete()
+    .eq('block_id', text(formData, 'block_id'))
+    .eq('user_id', text(formData, 'user_id'))
+  if (error) throw error
+  refreshAccess()
 }
