@@ -4,33 +4,29 @@ const shelves = [
   {
     id: 'research',
     label: 'Research',
-    title: '研究',
     copy: '关于 AI、群体智能、分布式系统，以及还没有被完全回答的问题。',
-    tags: '#AI   #群体智能   #科研   #论文',
+    tags: '#AI   #CollectiveIntelligence   #Research   #Paper',
     tone: 'research',
   },
   {
     id: 'projects',
     label: 'Projects',
-    title: '项目',
     copy: '把想法变成可以运行的系统，从无人机到工具，从硬件到软件。',
-    tags: '#UAV   #ROS   #嵌入式   #BUILD',
+    tags: '#UAV   #ROS   #Embedded   #Build',
     tone: 'projects',
   },
   {
     id: 'photos',
     label: 'Photos',
-    title: '照片',
     copy: '沿途的风景、城市、天气，以及一些我觉得值得留下的瞬间。',
-    tags: '#照片   #旅行   #日常',
+    tags: '#Photo   #Travel   #Daily',
     tone: 'photos',
   },
   {
     id: 'music',
     label: 'Music',
-    title: '音乐',
     copy: '在旋律和节奏里，找到另一种秩序。这里以后会放歌单和最近在听。',
-    tags: '#歌单   #推荐   #生活',
+    tags: '#Playlist   #Listening   #Life',
     tone: 'music',
   },
 ]
@@ -53,13 +49,13 @@ export default function Home() {
         </div>
 
         <nav className="rail-nav" aria-label="Personal navigation">
-          <a className="active" href="#home"><span />首页</a>
-          <a href="#about">关于我</a>
-          <a href="#research">研究</a>
-          <a href="#projects">项目</a>
-          <a href="#photos">照片</a>
-          <a href="#music">音乐</a>
-          <a href="#notes">随记</a>
+          <a className="active" href="#home"><span />Home</a>
+          <a href="#about">About</a>
+          <a href="#research">Research</a>
+          <a href="#projects">Projects</a>
+          <a href="#photos">Photos</a>
+          <a href="#music">Music</a>
+          <a href="#notes">Notes</a>
         </nav>
 
         <p className="rail-note">Good ideas<br/>usually start<br/>somewhere messy.</p>
@@ -72,12 +68,11 @@ export default function Home() {
 
       <main className="journal-main" id="home">
         <header className="journal-topbar">
-          <span>AIowuka's little corner of the internet</span>
+          <span>AIowuka&apos;s little corner of the internet</span>
           <div className="topbar-actions">
             <span aria-hidden="true">⌕</span>
             <span aria-hidden="true">☼</span>
-            <span>中 / EN</span>
-            <Link href="/private">个人空间 ↗</Link>
+            <Link href="/private">Private ↗</Link>
           </div>
         </header>
 
@@ -90,14 +85,15 @@ export default function Home() {
           </div>
 
           <div className="hero-copy" id="about">
-            <p className="hand-title">记录，<br/>构建，<br/>然后继续出发。</p>
+            <p className="hero-label">ABOUT</p>
+            <h1 className="english-hero">Record.<br/>Build.<br/>Keep going.</h1>
             <p className="about-copy">我是飞行器控制与信息工程方向的学生，对技术、世界和生活都充满好奇。喜欢动手，喜欢思考，也喜欢记录。</p>
             <p className="about-copy">希望在这个有点混乱但很美的世界里，构建一些有价值的东西。</p>
-            <a className="ink-button" href="#research">了解我 <span>→</span></a>
+            <a className="ink-button" href="#research">Explore <span>→</span></a>
           </div>
 
           <aside className="doing-note">
-            <div className="pin-row"><i /> <strong>现在在做</strong></div>
+            <div className="pin-row"><i /> <strong>NOW</strong></div>
             <ul>
               {doing.map((item) => <li key={item}><span />{item}</li>)}
             </ul>
@@ -109,7 +105,7 @@ export default function Home() {
           {shelves.map((item) => (
             <article className="shelf-card" id={item.id} key={item.id}>
               <div className={`shelf-visual ${item.tone}`} aria-hidden="true"><span>{item.label}</span></div>
-              <div className="shelf-heading"><h2>{item.title}</h2><span>→</span></div>
+              <div className="shelf-heading"><h2>{item.label}</h2><span>→</span></div>
               <p>{item.copy}</p>
               <small>{item.tags}</small>
             </article>
@@ -133,7 +129,7 @@ export default function Home() {
             <span className="micro-label">PRIVATE / FRIENDS / SELECTED</span>
             <p>有些东西我只想留给熟悉的人。登录不自动获得权限，但可以先敲门。</p>
           </div>
-          <Link href="/private">进入个人空间 <span>→</span></Link>
+          <Link href="/private">Enter private space <span>→</span></Link>
         </section>
       </main>
     </div>
