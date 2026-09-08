@@ -48,6 +48,40 @@ export async function registerUploadedMedia(formData: FormData) {
   revalidatePath('/')
 }
 
+export async function setHomepageHeroMedia(formData: FormData) {
+  const { claims } = await requireOwner()
+  const supabase = await createClient()
+  const id = value(formData, 'id', true)
+  const { data: media, error: mediaError } = await supabase
+    .from('media_assets')
+    .select('id,mime_type,visibility')
+    .eq('id', id)
+    .maybeSingle()
+  if (mediaError) throw mediaError
+  if (!media) throw new Error('MEDIA_NOT_FOUND')
+  if (!media.mime_type?.startsWith('image/')) throw new Error('HERO_MUST_BE_IMAGE')
+  if (media.visibility !== 'public') throw new Error('HERO_MUST_BE_PUBLIC')
+
+  const { error } = await supabase.from('site_settings').upsert({
+    key: 'hero_media_id',
+    value: id,
+    is_public: true,
+    updated_by: String(claims!.sub),
+  })
+  if (error) throw error
+  revalidatePath('/')
+  revalidatePath('/studio/media')
+}
+
+export async function clearHomepageHeroMedia() {
+  await requireOwner()
+  const supabase = await createClient()
+  const { error } = await supabase.from('site_settings').delete().eq('key', 'hero_media_id')
+  if (error) throw error
+  revalidatePath('/')
+  revalidatePath('/studio/media')
+}
+
 export async function deleteMedia(formData: FormData) {
   await requireOwner()
   const supabase = await createClient()
@@ -59,6 +93,12 @@ export async function deleteMedia(formData: FormData) {
     .maybeSingle()
   if (lookupError) throw lookupError
   if (!media) return
+
+  const { data: hero } = await supabase.from('site_settings').select('value').eq('key', 'hero_media_id').maybeSingle()
+  if (hero?.value === id) {
+    const { error: settingError } = await supabase.from('site_settings').delete().eq('key', 'hero_media_id')
+    if (settingError) throw settingError
+  }
 
   const { error: storageError } = await supabase.storage.from('site-media').remove([media.storage_path])
   if (storageError) throw storageError
