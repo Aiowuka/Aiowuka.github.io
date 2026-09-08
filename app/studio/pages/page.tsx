@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { saveBlock, savePage } from '../actions'
 import { deleteBlock, deletePage } from '../delete-actions'
@@ -78,30 +79,33 @@ export default async function StudioPages() {
         <PageForm />
       </section>
 
-      {(pages ?? []).map((page) => (
-        <section className="studio-section" key={page.id}>
-          <div className="studio-section-head">
-            <div><p className="micro-label">/{page.slug}</p><h2>{page.title}</h2></div>
-            <span className="studio-status">{page.visibility} · {page.published ? 'live' : 'draft'}</span>
-          </div>
-          <PageForm page={page} />
-          {page.slug !== 'home' ? (
-            <details className="studio-danger-zone">
-              <summary>Delete page…</summary>
-              <form action={deletePage}>
-                <input type="hidden" name="id" value={page.id} />
-                <p>页面和它的 Blocks 会从网站消失；删除前快照会进入 History。Home 页面不可删除。</p>
-                <button type="submit">Delete page</button>
-              </form>
-            </details>
-          ) : null}
-          <div className="studio-subsection">
-            <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div></div>
-            {(blocks ?? []).filter((b) => b.page_id === page.id).map((block) => <BlockForm block={block} pageId={page.id} key={block.id} />)}
-            <details className="studio-add-details"><summary>+ Add block</summary><BlockForm pageId={page.id} /></details>
-          </div>
-        </section>
-      ))}
+      {(pages ?? []).map((page) => {
+        const href = page.slug === 'home' ? '/' : `/${page.slug}`
+        return (
+          <section className="studio-section" key={page.id}>
+            <div className="studio-section-head">
+              <div><p className="micro-label">{href}</p><h2>{page.title}</h2></div>
+              <div className="studio-head-actions"><span className="studio-status">{page.visibility} · {page.published ? 'live' : 'draft'}</span><Link href={href}>Preview ↗</Link></div>
+            </div>
+            <PageForm page={page} />
+            {page.slug !== 'home' ? (
+              <details className="studio-danger-zone">
+                <summary>Delete page…</summary>
+                <form action={deletePage}>
+                  <input type="hidden" name="id" value={page.id} />
+                  <p>页面和它的 Blocks 会从网站消失；删除前快照会进入 History。Home 页面不可删除。</p>
+                  <button type="submit">Delete page</button>
+                </form>
+              </details>
+            ) : null}
+            <div className="studio-subsection">
+              <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div><Link href={href}>Open page →</Link></div>
+              {(blocks ?? []).filter((b) => b.page_id === page.id).map((block) => <BlockForm block={block} pageId={page.id} key={block.id} />)}
+              <details className="studio-add-details"><summary>+ Add block</summary><BlockForm pageId={page.id} /></details>
+            </div>
+          </section>
+        )
+      })}
     </>
   )
 }
