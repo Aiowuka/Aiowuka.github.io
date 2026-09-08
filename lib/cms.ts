@@ -46,8 +46,10 @@ export type ContentItem = {
   visibility: 'public' | 'member' | 'selected' | 'owner'
   published: boolean
   featured: boolean
+  tags: string[]
   metadata: Record<string, unknown>
   cover_media_id: string | null
+  published_at: string | null
   updated_at: string
   created_at: string
 }
@@ -63,6 +65,8 @@ export type MediaAsset = {
   visibility: 'public' | 'member' | 'selected' | 'owner'
   url: string
 }
+
+const CONTENT_SELECT = 'id,slug,title,summary,body_markdown,content_type,visibility,published,featured,tags,metadata,cover_media_id,published_at,updated_at,created_at'
 
 export async function getNavigation(): Promise<NavItem[]> {
   const supabase = await createClient()
@@ -111,11 +115,12 @@ export async function getCollectionItems(contentType: string): Promise<ContentIt
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('content_items')
-    .select('id,slug,title,summary,body_markdown,content_type,visibility,published,featured,metadata,cover_media_id,updated_at,created_at')
+    .select(CONTENT_SELECT)
     .eq('content_type', contentType)
     .eq('published', true)
     .order('featured', { ascending: false })
     .order('sort_order')
+    .order('published_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
   if (error) return []
   return (data ?? []) as ContentItem[]
@@ -125,7 +130,7 @@ export async function getContentItem(contentType: string, slug: string): Promise
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('content_items')
-    .select('id,slug,title,summary,body_markdown,content_type,visibility,published,featured,metadata,cover_media_id,updated_at,created_at')
+    .select(CONTENT_SELECT)
     .eq('content_type', contentType)
     .eq('slug', slug)
     .eq('published', true)
