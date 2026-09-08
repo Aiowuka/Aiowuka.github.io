@@ -66,36 +66,36 @@ export default function LoginForm() {
       return
     }
 
-    // Hard navigation ensures the next server request reads the freshly written auth cookie.
     window.location.assign('/private')
   }
 
-  return <div className="panel" style={{marginTop:24}}>
-    <h1 style={{fontSize:48}}>Sign in</h1>
-    <p className="muted">使用邮箱验证码登录。登录后仍按站点授权规则访问受保护内容。</p>
-    {error && <p>{error}</p>}
+  return <div className="login-card">
+    <span className="micro-label">EMAIL OTP / ACCESS</span>
+    <h1>{sent ? '看看邮箱。' : '进来坐坐。'}</h1>
+    <p className="muted">{sent ? `验证码已经发到 ${email}` : '输入邮箱，我会给你发一个一次性验证码。登录状态会保留，除非你主动退出。'}</p>
+    {error && <p className="login-error">{error}</p>}
 
     {!sent ? <form onSubmit={sendOtp}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">你的邮箱</label>
         <input
           id="email"
           name="email"
           type="email"
           required
           autoComplete="email"
+          placeholder="you@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
       </div>
       <button className="button primary" type="submit" disabled={busy}>
-        {busy ? '发送中…' : '发送验证码'}
+        {busy ? '发送中…' : '发送验证码 →'}
       </button>
     </form> : <>
-      <p>验证码已发送到 <strong>{email}</strong></p>
       <form onSubmit={verifyOtp}>
         <div className="field">
-          <label htmlFor="token">Verification code</label>
+          <label htmlFor="token">邮件里的验证码</label>
           <input
             id="token"
             name="token"
@@ -106,19 +106,18 @@ export default function LoginForm() {
             maxLength={8}
             required
             autoFocus
+            placeholder="••••••••"
             value={token}
             onChange={(event) => setToken(event.target.value.replace(/\D/g, '').slice(0, 8))}
           />
         </div>
         <button className="button primary" type="submit" disabled={busy}>
-          {busy ? '验证中…' : '验证并登录'}
+          {busy ? '验证中…' : '验证并进入 →'}
         </button>
       </form>
-      <p className="muted" style={{marginTop:16}}>
-        <button type="button" onClick={() => { setSent(false); setToken(''); setError('') }} disabled={busy}>
-          更换邮箱 / 重新发送
-        </button>
-      </p>
+      <button className="text-button login-switch" type="button" onClick={() => { setSent(false); setToken(''); setError('') }} disabled={busy}>
+        换一个邮箱 / 重新发送
+      </button>
     </>}
   </div>
 }
