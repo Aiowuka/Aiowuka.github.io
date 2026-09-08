@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import './portal.css'
+import './article.css'
 
 export const metadata: Metadata = {
   title: 'AIowuka — 记录、构建，然后继续出发',
