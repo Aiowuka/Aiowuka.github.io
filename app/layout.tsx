@@ -7,6 +7,7 @@ import './language-shell.css'
 import './cms-public.css'
 import './cms-media.css'
 import './markdown.css'
+import './blog-meta.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://aiowuka.me'),
