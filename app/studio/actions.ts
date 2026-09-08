@@ -1,6 +1,5 @@
 'use server'
 
-import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireOwner } from '@/lib/access'
@@ -24,6 +23,22 @@ function visibility(formData: FormData) {
   const value = text(formData, 'visibility')
   if (!VISIBILITIES.includes(value as (typeof VISIBILITIES)[number])) throw new Error('INVALID_VISIBILITY')
   return value as (typeof VISIBILITIES)[number]
+}
+
+function parseTags(formData: FormData) {
+  const raw = text(formData, 'tags')
+  if (!raw) return []
+  const tags = [...new Set(raw.split(/[,，\n]+/).map((tag) => tag.trim().replace(/^#+/, '')).filter(Boolean))]
+  if (tags.length > 16 || tags.some((tag) => tag.length > 48)) throw new Error('INVALID_TAGS')
+  return tags
+}
+
+function sectionFor(contentType: string) {
+  if (contentType === 'project') return 'projects'
+  if (contentType === 'photo') return 'photos'
+  if (contentType === 'music') return 'music'
+  if (contentType === 'research') return 'research'
+  return 'notes'
 }
 
 function refreshCms(paths: string[] = []) {
@@ -55,11 +70,17 @@ export async function savePage(formData: FormData) {
     sort_order: integer(formData, 'sort_order'),
   }
 
+  const previous = id
+    ? (await supabase.from('pages').select('slug').eq('id', id).maybeSingle()).data
+    : null
   const result = id
     ? await supabase.from('pages').update(payload).eq('id', id)
     : await supabase.from('pages').insert({ ...payload, created_by: String(claims!.sub) })
   if (result.error) throw result.error
-  refreshCms([slug === 'home' ? '/' : `/${slug}`])
+  refreshCms([
+    slug === 'home' ? '/' : `/${slug}`,
+    previous?.slug && previous.slug !== slug ? (previous.slug === 'home' ? '/' : `/${previous.slug}`) : '',
+  ].filter(Boolean))
 }
 
 export async function saveBlock(formData: FormData) {
@@ -112,6 +133,9 @@ export async function saveContentItem(formData: FormData) {
     try { metadata = JSON.parse(rawMetadata) as Record<string, unknown> } catch { throw new Error('INVALID_METADATA_JSON') }
   }
 
+  const previous = id
+    ? (await supabase.from('content_items').select('slug,content_type,published_at').eq('id', id).maybeSingle()).data
+    : null
   const published = formData.get('published') === 'on'
   const coverMediaId = text(formData, 'cover_media_id') || null
   const payload = {
@@ -123,10 +147,11 @@ export async function saveContentItem(formData: FormData) {
     visibility: visibility(formData),
     published,
     featured: formData.get('featured') === 'on',
+    tags: parseTags(formData),
     sort_order: integer(formData, 'sort_order'),
     metadata,
     cover_media_id: coverMediaId,
-    published_at: published ? new Date().toISOString() : null,
+    published_at: published ? (previous?.published_at || new Date().toISOString()) : null,
   }
 
   const result = id
@@ -134,8 +159,13 @@ export async function saveContentItem(formData: FormData) {
     : await supabase.from('content_items').insert({ ...payload, created_by: String(claims!.sub) })
   if (result.error) throw result.error
 
-  const section = contentType === 'project' ? 'projects' : contentType === 'photo' ? 'photos' : contentType === 'music' ? 'music' : contentType === 'research' ? 'research' : 'notes'
-  refreshCms([`/${section}`, `/${section}/${slug}`])
+  const section = sectionFor(contentType)
+  const paths = [`/${section}`, `/${section}/${slug}`]
+  if (previous) {
+    const oldSection = sectionFor(previous.content_type)
+    paths.push(`/${oldSection}`, `/${oldSection}/${previous.slug}`)
+  }
+  refreshCms([...new Set(paths)])
 }
 
 export async function saveNavigationItem(formData: FormData) {
@@ -239,40 +269,6 @@ export async function revokePageAccess(formData: FormData) {
     .eq('page_id', text(formData, 'page_id', true))
     .eq('user_id', text(formData, 'user_id', true))
   if (error) throw error
-  refreshCms()
-}
-
-export async function uploadMedia(formData: FormData) {
-  const { claims } = await requireOwner()
-  const supabase = await createClient()
-  const file = formData.get('file')
-  if (!(file instanceof File) || file.size === 0) throw new Error('FILE_REQUIRED')
-  if (file.size > 20 * 1024 * 1024) throw new Error('FILE_TOO_LARGE')
-
-  const extMatch = file.name.toLowerCase().match(/\.[a-z0-9]{1,8}$/)
-  const ext = extMatch?.[0] || ''
-  const path = `${new Date().toISOString().slice(0, 10)}/${randomUUID()}${ext}`
-  const upload = await supabase.storage.from('site-media').upload(path, file, {
-    contentType: file.type || undefined,
-    upsert: false,
-  })
-  if (upload.error) throw upload.error
-
-  const inserted = await supabase.from('media_assets').insert({
-    storage_path: path,
-    file_name: file.name,
-    mime_type: file.type || null,
-    byte_size: file.size,
-    title: text(formData, 'title') || file.name,
-    alt_text: text(formData, 'alt_text') || null,
-    caption: text(formData, 'caption') || null,
-    visibility: visibility(formData),
-    created_by: String(claims!.sub),
-  })
-  if (inserted.error) {
-    await supabase.storage.from('site-media').remove([path])
-    throw inserted.error
-  }
   refreshCms()
 }
 
