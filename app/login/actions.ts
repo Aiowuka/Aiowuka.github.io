@@ -1,13 +1,17 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-function authBaseUrl() {
-  if (process.env.VERCEL_ENV === 'preview') {
-    const previewHost = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
-    if (previewHost) return previewHost.startsWith('http') ? previewHost : `https://${previewHost}`
-  }
+async function authBaseUrl() {
+  const requestHeaders = await headers()
+  const origin = requestHeaders.get('origin')
+  if (origin) return origin.replace(/\/$/, '')
+
+  const forwardedHost = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host')
+  const forwardedProto = requestHeaders.get('x-forwarded-proto') || 'https'
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`
 
   if (process.env.VERCEL_ENV === 'production') {
     return process.env.NEXT_PUBLIC_SITE_URL || 'https://aiowuka.me'
@@ -21,9 +25,10 @@ export async function sendMagicLink(formData: FormData) {
   if (!email || !email.includes('@')) redirect('/login?error=invalid-email')
 
   const supabase = await createClient()
+  const baseUrl = await authBaseUrl()
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${authBaseUrl()}/auth/callback` },
+    options: { emailRedirectTo: `${baseUrl}/auth/callback` },
   })
 
   if (error) redirect('/login?error=send-failed')
