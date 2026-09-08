@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PublicFrame } from '@/components/public-frame'
-import { getContentItem, getNavigation, getPageBySlug } from '@/lib/cms'
+import { getContentItem, getMediaAsset, getNavigation, getPageBySlug } from '@/lib/cms'
 
 export default async function ContentDetailPage({
   params,
@@ -14,6 +14,7 @@ export default async function ContentDetailPage({
 
   const item = await getContentItem(page.collection_type, itemSlug)
   if (!item) notFound()
+  const cover = await getMediaAsset(item.cover_media_id)
 
   return (
     <PublicFrame navigation={navigation} activeHref={`/${slug}`}>
@@ -26,6 +27,12 @@ export default async function ContentDetailPage({
         </div>
         <h1>{item.title}</h1>
         {item.summary ? <p className="article-lead">{item.summary}</p> : null}
+        {cover ? (
+          <figure className="article-cover">
+            <img src={cover.url} alt={cover.alt_text || cover.title || item.title} />
+            {cover.caption ? <figcaption>{cover.caption}</figcaption> : null}
+          </figure>
+        ) : null}
         <div className="article-body">{item.body_markdown}</div>
       </article>
     </PublicFrame>
