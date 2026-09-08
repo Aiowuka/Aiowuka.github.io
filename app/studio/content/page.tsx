@@ -6,6 +6,11 @@ import { deleteContentItem } from '../delete-actions'
 const visibilityOptions = ['public', 'member', 'selected', 'owner']
 const typeOptions = ['research', 'project', 'note', 'photo', 'music']
 
+function formatDate(value?: string | null) {
+  if (!value) return 'Not published yet'
+  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
+}
+
 function ContentForm({ item, media }: { item?: any; media: any[] }) {
   return (
     <form action={saveContentItem} className="studio-form studio-paper">
@@ -18,8 +23,10 @@ function ContentForm({ item, media }: { item?: any; media: any[] }) {
         <label>Sort order<input name="sort_order" type="number" defaultValue={item?.sort_order ?? 0} /></label>
         <label>Cover image<select name="cover_media_id" defaultValue={item?.cover_media_id ?? ''}><option value="">None</option>{media.map((m) => <option value={m.id} key={m.id}>{m.title || m.file_name} · {m.visibility}</option>)}</select></label>
       </div>
-      <label>Summary<textarea name="summary" rows={3} defaultValue={item?.summary ?? ''} /></label>
-      <label>Body<textarea name="body_markdown" rows={14} defaultValue={item?.body_markdown ?? ''} placeholder="这里写正文。支持纯文本 / Markdown 结构，之后会继续升级编辑体验。" /></label>
+      <label>Summary<textarea name="summary" rows={3} defaultValue={item?.summary ?? ''} placeholder="一两句话说明这篇内容是什么。" /></label>
+      <label>Tags<input name="tags" defaultValue={(item?.tags ?? []).join(', ')} placeholder="AI, research, UAV, life" /><span className="studio-field-help">用逗号分隔。公开页面会直接显示这些标签。</span></label>
+      <label>Body<textarea name="body_markdown" rows={16} defaultValue={item?.body_markdown ?? ''} placeholder={'支持 Markdown。\n\n## 小标题\n\n- 列表\n- 代码\n- 链接'} /></label>
+      {item ? <p className="studio-publish-context">First published: <strong>{formatDate(item.published_at)}</strong> · Last updated: <strong>{formatDate(item.updated_at)}</strong></p> : null}
       <details className="studio-advanced">
         <summary>Advanced metadata</summary>
         <label>Metadata JSON<textarea name="metadata" rows={4} defaultValue={item ? JSON.stringify(item.metadata ?? {}, null, 2) : '{}'} /></label>
@@ -56,8 +63,8 @@ export default async function StudioContent() {
         {(items ?? []).map((item) => (
           <details className="studio-item" key={item.id}>
             <summary>
-              <div><strong>{item.title}</strong><span>/{item.slug} · {item.content_type}</span></div>
-              <span>{item.visibility} · {item.published ? 'live' : 'draft'}{item.featured ? ' · featured' : ''}</span>
+              <div><strong>{item.title}</strong><span>/{item.slug} · {item.content_type}{item.tags?.length ? ` · #${item.tags.join(' #')}` : ''}</span></div>
+              <span>{item.visibility} · {item.published ? formatDate(item.published_at) : 'draft'}{item.featured ? ' · featured' : ''}</span>
             </summary>
             <ContentForm item={item} media={media} />
             <details className="studio-danger-zone">
