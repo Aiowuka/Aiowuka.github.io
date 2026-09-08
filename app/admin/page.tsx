@@ -25,21 +25,43 @@ export default async function AdminPage() {
     supabase.from('content_access').select('content_id,user_id'),
   ])
 
-  const approvedMembers = (profiles ?? []).filter((p) => p.role !== 'owner' && p.approved)
+  const allProfiles = profiles ?? []
+  const allItems = items ?? []
+  const approvedMembers = allProfiles.filter((p) => p.role !== 'owner' && p.approved)
+  const pendingMembers = allProfiles.filter((p) => p.role !== 'owner' && !p.approved)
+  const publishedItems = allItems.filter((item) => item.published)
 
   return (
     <main className="admin-shell">
       <div className="row">
-        <Link href="/">← 返回主页（保持登录）</Link>
-        <form action="/auth/signout" method="post"><button className="button">退出登录</button></form>
+        <div>
+          <Link className="portal-wordmark" href="/">Aiowuka</Link>
+          <div className="micro-label" style={{ marginTop: 8 }}>OWNER WORKBENCH</div>
+        </div>
+        <div className="row">
+          <Link href="/private">私人空间</Link>
+          <Link href="/">主页</Link>
+          <form action="/auth/signout" method="post"><button className="button">退出登录</button></form>
+        </div>
       </div>
 
-      <h1 style={{ fontSize: 58 }}>Admin</h1>
+      <h1>后台。</h1>
+      <p className="muted" style={{ maxWidth: 620, lineHeight: 1.8 }}>这里是网站的工作台，不是给访客看的页面。成员批准、内容发布和 SELECTED 授权都从这里完成。</p>
+
+      <section className="admin-stats" aria-label="Admin overview">
+        <div><span>WAITING</span><strong>{pendingMembers.length}</strong><small>待批准</small></div>
+        <div><span>CONTENT</span><strong>{allItems.length}</strong><small>全部内容</small></div>
+        <div><span>LIVE</span><strong>{publishedItems.length}</strong><small>已发布</small></div>
+        <div><span>MEMBERS</span><strong>{approvedMembers.length}</strong><small>已批准</small></div>
+      </section>
 
       <section className="panel stack">
-        <h2>成员授权</h2>
+        <div>
+          <span className="micro-label">ACCESS / PEOPLE</span>
+          <h2 style={{ marginTop: 8 }}>成员授权</h2>
+        </div>
         <p className="muted">登录只证明身份。只有你批准后，对方才获得 MEMBER 权限。</p>
-        {(profiles ?? []).map((p) => (
+        {allProfiles.map((p) => (
           <div className="row" key={p.id}>
             <div>
               <strong>{p.display_name || p.email}</strong>
@@ -62,13 +84,16 @@ export default async function AdminPage() {
         ))}
       </section>
 
-      <section className="panel stack" style={{ marginTop: 24 }}>
-        <h2>新增内容</h2>
+      <section className="panel stack">
+        <div>
+          <span className="micro-label">WRITE / PUBLISH</span>
+          <h2 style={{ marginTop: 8 }}>新增内容</h2>
+        </div>
         <form action={saveContent}>
-          <div className="field"><label>Slug</label><input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></div>
+          <div className="field"><label>Slug</label><input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="example-note" /></div>
           <div className="field"><label>标题</label><input name="title" required /></div>
-          <div className="field"><label>摘要</label><textarea name="summary" /></div>
-          <div className="field"><label>正文</label><textarea name="body" rows={10} /></div>
+          <div className="field"><label>摘要</label><textarea name="summary" rows={3} /></div>
+          <div className="field"><label>正文</label><textarea name="body" rows={12} /></div>
           <div className="field">
             <label>可见范围</label>
             <select name="visibility" defaultValue="owner">
@@ -79,15 +104,18 @@ export default async function AdminPage() {
             </select>
           </div>
           <label><input type="checkbox" name="published" /> 发布</label>
-          <div style={{ marginTop: 16 }}><button className="button primary">保存</button></div>
+          <div style={{ marginTop: 18 }}><button className="button primary">保存内容 →</button></div>
         </form>
       </section>
 
-      <section className="panel stack" style={{ marginTop: 24 }}>
-        <h2>内容权限</h2>
+      <section className="panel stack">
+        <div>
+          <span className="micro-label">CONTENT / PERMISSIONS</span>
+          <h2 style={{ marginTop: 8 }}>内容权限</h2>
+        </div>
         <p className="muted">你可以随时改变可见范围或撤回发布；SELECTED 内容还可以精确指定到个人。</p>
-        {(items ?? []).length === 0 && <p className="muted">还没有内容。</p>}
-        {(items ?? []).map((item) => {
+        {allItems.length === 0 && <p className="muted">还没有内容。</p>}
+        {allItems.map((item) => {
           const itemGrants = new Set((grants ?? []).filter((g) => g.content_id === item.id).map((g) => g.user_id))
           return (
             <article className="content-card stack" key={item.id}>
