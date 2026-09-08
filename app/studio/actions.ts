@@ -8,6 +8,8 @@ const VISIBILITIES = ['public', 'member', 'selected', 'owner'] as const
 const CONTENT_TYPES = ['research', 'project', 'note', 'photo', 'music'] as const
 const PAGE_TEMPLATES = ['home', 'collection', 'now', 'about', 'standard'] as const
 
+type Visibility = (typeof VISIBILITIES)[number]
+
 function text(formData: FormData, key: string, required = false) {
   const value = String(formData.get(key) ?? '').trim()
   if (required && !value) throw new Error(`MISSING_${key.toUpperCase()}`)
@@ -19,10 +21,10 @@ function integer(formData: FormData, key: string, fallback = 0) {
   return Number.isFinite(value) ? value : fallback
 }
 
-function visibility(formData: FormData) {
+function visibility(formData: FormData): Visibility {
   const value = text(formData, 'visibility')
-  if (!VISIBILITIES.includes(value as (typeof VISIBILITIES)[number])) throw new Error('INVALID_VISIBILITY')
-  return value as (typeof VISIBILITIES)[number]
+  if (!VISIBILITIES.includes(value as Visibility)) throw new Error('INVALID_VISIBILITY')
+  return value as Visibility
 }
 
 function parseTags(formData: FormData) {
@@ -39,6 +41,12 @@ function sectionFor(contentType: string) {
   if (contentType === 'music') return 'music'
   if (contentType === 'research') return 'research'
   return 'notes'
+}
+
+function coverCanServe(contentVisibility: Visibility, coverVisibility: Visibility) {
+  if (contentVisibility === 'owner') return true
+  if (contentVisibility === 'public') return coverVisibility === 'public'
+  return coverVisibility === 'public' || coverVisibility === 'member'
 }
 
 function refreshCms(paths: string[] = []) {
@@ -138,13 +146,27 @@ export async function saveContentItem(formData: FormData) {
     : null
   const published = formData.get('published') === 'on'
   const coverMediaId = text(formData, 'cover_media_id') || null
+  const contentVisibility = visibility(formData)
+
+  if (coverMediaId) {
+    const { data: cover, error: coverError } = await supabase
+      .from('media_assets')
+      .select('id,mime_type,visibility')
+      .eq('id', coverMediaId)
+      .maybeSingle()
+    if (coverError) throw coverError
+    if (!cover) throw new Error('COVER_NOT_FOUND')
+    if (!cover.mime_type?.startsWith('image/')) throw new Error('COVER_MUST_BE_IMAGE')
+    if (!coverCanServe(contentVisibility, cover.visibility as Visibility)) throw new Error('COVER_VISIBILITY_TOO_PRIVATE')
+  }
+
   const payload = {
     slug,
     title: text(formData, 'title', true),
     summary: text(formData, 'summary') || null,
     body_markdown: String(formData.get('body_markdown') ?? ''),
     content_type: contentType,
-    visibility: visibility(formData),
+    visibility: contentVisibility,
     published,
     featured: formData.get('featured') === 'on',
     tags: parseTags(formData),
