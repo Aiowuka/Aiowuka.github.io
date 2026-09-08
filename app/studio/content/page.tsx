@@ -11,6 +11,14 @@ function formatDate(value?: string | null) {
   return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
 }
 
+function sectionFor(contentType: string) {
+  if (contentType === 'project') return 'projects'
+  if (contentType === 'photo') return 'photos'
+  if (contentType === 'music') return 'music'
+  if (contentType === 'research') return 'research'
+  return 'notes'
+}
+
 function ContentForm({ item, media }: { item?: any; media: any[] }) {
   return (
     <form action={saveContentItem} className="studio-form studio-paper">
@@ -60,23 +68,27 @@ export default async function StudioContent() {
       <section className="studio-section">
         <div className="studio-section-head"><div><p className="micro-label">LIBRARY</p><h2>Existing content</h2></div><span className="studio-status">{(items ?? []).length} items</span></div>
         {(items ?? []).length === 0 ? <div className="studio-empty">还没有内容。你在上面创建的第一篇内容会自动出现在对应页面。</div> : null}
-        {(items ?? []).map((item) => (
-          <details className="studio-item" key={item.id}>
-            <summary>
-              <div><strong>{item.title}</strong><span>/{item.slug} · {item.content_type}{item.tags?.length ? ` · #${item.tags.join(' #')}` : ''}</span></div>
-              <span>{item.visibility} · {item.published ? formatDate(item.published_at) : 'draft'}{item.featured ? ' · featured' : ''}</span>
-            </summary>
-            <ContentForm item={item} media={media} />
-            <details className="studio-danger-zone">
-              <summary>Delete content…</summary>
-              <form action={deleteContentItem}>
-                <input type="hidden" name="id" value={item.id} />
-                <p>删除后会从网站消失。删除前的快照仍会保存在 History，可用于恢复。</p>
-                <button type="submit">Delete permanently</button>
-              </form>
+        {(items ?? []).map((item) => {
+          const href = `/${sectionFor(item.content_type)}/${item.slug}`
+          return (
+            <details className="studio-item" key={item.id}>
+              <summary>
+                <div><strong>{item.title}</strong><span>/{item.slug} · {item.content_type}{item.tags?.length ? ` · #${item.tags.join(' #')}` : ''}</span></div>
+                <span>{item.visibility} · {item.published ? formatDate(item.published_at) : 'draft'}{item.featured ? ' · featured' : ''}</span>
+              </summary>
+              <div className="studio-preview-row"><Link href={href}>Preview article ↗</Link><Link href={`/${sectionFor(item.content_type)}`}>Open collection →</Link></div>
+              <ContentForm item={item} media={media} />
+              <details className="studio-danger-zone">
+                <summary>Delete content…</summary>
+                <form action={deleteContentItem}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <p>删除后会从网站消失。删除前的快照仍会保存在 History，可用于恢复。</p>
+                  <button type="submit">Delete permanently</button>
+                </form>
+              </details>
             </details>
-          </details>
-        ))}
+          )
+        })}
       </section>
     </>
   )
