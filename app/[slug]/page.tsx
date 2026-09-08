@@ -31,7 +31,10 @@ function renderBlock(block: Awaited<ReturnType<typeof getPageBlocks>>[number]) {
   )
 }
 
-type PageProps = { params: Promise<{ slug: string }> }
+type PageProps = {
+  params: Promise<{ slug: string }>
+  searchParams?: Promise<{ tag?: string | string[] }>
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
@@ -50,9 +53,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function CmsPageRoute({ params }: PageProps) {
+export default async function CmsPageRoute({ params, searchParams }: PageProps) {
   const { slug } = await params
   if (slug === 'home') redirect('/')
+
+  const search = searchParams ? await searchParams : undefined
+  const rawTag = Array.isArray(search?.tag) ? search?.tag[0] : search?.tag
+  const selectedTag = rawTag?.trim() || null
 
   const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug)])
   if (!page) notFound()
@@ -62,6 +69,10 @@ export default async function CmsPageRoute({ params }: PageProps) {
     page.collection_type ? getCollectionItems(page.collection_type) : Promise.resolve([]),
   ])
   const coverMedia = await getMediaAssets(items.map((item) => item.cover_media_id))
+  const allTags = [...new Set(items.flatMap((item) => item.tags ?? []))].sort((a, b) => a.localeCompare(b))
+  const visibleItems = selectedTag
+    ? items.filter((item) => item.tags?.some((tag) => tag.toLocaleLowerCase() === selectedTag.toLocaleLowerCase()))
+    : items
 
   return (
     <PublicFrame navigation={navigation} activeHref={`/${slug}`}>
@@ -71,9 +82,22 @@ export default async function CmsPageRoute({ params }: PageProps) {
         {page.summary ? <p>{page.summary}</p> : null}
       </section>
 
+      {page.template === 'collection' && allTags.length ? (
+        <nav className="collection-filters" aria-label="Filter by tag">
+          <Link className={!selectedTag ? 'active' : undefined} href={`/${slug}`}>All</Link>
+          {allTags.map((tag) => (
+            <Link
+              className={selectedTag?.toLocaleLowerCase() === tag.toLocaleLowerCase() ? 'active' : undefined}
+              href={`/${slug}?tag=${encodeURIComponent(tag)}`}
+              key={tag}
+            >#{tag}</Link>
+          ))}
+        </nav>
+      ) : null}
+
       {page.template === 'collection' ? (
         <section className="collection-list">
-          {items.length ? items.map((item, index) => {
+          {visibleItems.length ? visibleItems.map((item, index) => {
             const cover = item.cover_media_id ? coverMedia.get(item.cover_media_id) : null
             const published = formatDate(item.published_at || item.created_at)
             return (
@@ -100,8 +124,8 @@ export default async function CmsPageRoute({ params }: PageProps) {
             )
           }) : (
             <div className="empty-paper">
-              <p>这里还没有内容。</p>
-              <span>Content added in Studio will appear here automatically.</span>
+              <p>{selectedTag ? `没有 #${selectedTag} 的内容。` : '这里还没有内容。'}</p>
+              <span>{selectedTag ? 'Choose another tag or return to All.' : 'Content added in Studio will appear here automatically.'}</span>
             </div>
           )}
         </section>
