@@ -30,8 +30,8 @@ export default async function AdminPage() {
   return (
     <main className="admin-shell">
       <div className="row">
-        <Link href="/">← Home</Link>
-        <form action="/auth/signout" method="post"><button className="button">Sign out</button></form>
+        <Link href="/">← 返回主页（保持登录）</Link>
+        <form action="/auth/signout" method="post"><button className="button">退出登录</button></form>
       </div>
 
       <h1 style={{ fontSize: 58 }}>Admin</h1>
