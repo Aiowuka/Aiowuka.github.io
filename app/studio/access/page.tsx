@@ -7,7 +7,7 @@ import {
   revokeContentAccess,
   revokePageAccess,
 } from '../actions'
-import { grantMediaAccess, revokeMediaAccess } from './actions'
+import { grantBlockAccess, grantMediaAccess, revokeBlockAccess, revokeMediaAccess } from './actions'
 
 export default async function StudioAccess() {
   const supabase = await createClient()
@@ -15,26 +15,32 @@ export default async function StudioAccess() {
     { data: profiles },
     { data: content },
     { data: pages },
+    { data: blocks },
     { data: media },
     { data: contentGrants },
     { data: pageGrants },
+    { data: blockGrants },
     { data: mediaGrants },
   ] = await Promise.all([
     supabase.from('profiles').select('id,email,display_name,role,approved,created_at').order('created_at', { ascending: false }),
     supabase.from('content_items').select('id,title,slug,content_type,visibility').eq('visibility', 'selected').order('updated_at', { ascending: false }),
-    supabase.from('pages').select('id,title,slug,visibility').eq('visibility', 'selected').order('sort_order'),
+    supabase.from('pages').select('id,title,slug,visibility').order('sort_order'),
+    supabase.from('page_blocks').select('id,page_id,block_key,label,title,visibility').eq('visibility', 'selected').order('sort_order'),
     supabase.from('media_assets').select('id,title,file_name,mime_type,visibility').eq('visibility', 'selected').order('created_at', { ascending: false }),
     supabase.from('content_access').select('content_id,user_id'),
     supabase.from('page_access').select('page_id,user_id'),
+    supabase.from('block_access').select('block_id,user_id'),
     supabase.from('media_access').select('media_id,user_id'),
   ])
 
   const members = (profiles ?? []).filter((p) => p.role !== 'owner')
   const approved = members.filter((p) => p.approved)
+  const selectedPages = (pages ?? []).filter((p) => p.visibility === 'selected')
+  const pageById = new Map((pages ?? []).map((page) => [page.id, page]))
 
   return (
     <>
-      <header className="studio-header"><p className="micro-label">AUTHORIZATION</p><h1>Access</h1><p>登录只证明身份。MEMBER 由你批准，SELECTED 再针对具体页面、内容或媒体逐人授权。</p></header>
+      <header className="studio-header"><p className="micro-label">AUTHORIZATION</p><h1>Access</h1><p>登录只证明身份。MEMBER 由你批准，SELECTED 再针对具体页面、页面 Block、内容或媒体逐人授权。</p></header>
 
       <section className="studio-section">
         <div className="studio-section-head"><div><p className="micro-label">MEMBERS</p><h2>People</h2></div><span className="studio-status">{approved.length} approved · {members.length - approved.length} pending</span></div>
@@ -71,8 +77,8 @@ export default async function StudioAccess() {
 
       <section className="studio-section">
         <div className="studio-section-head"><div><p className="micro-label">SELECTED PAGES</p><h2>Page grants</h2></div></div>
-        {(pages ?? []).length === 0 ? <div className="studio-empty">没有 SELECTED 页面。</div> : null}
-        {(pages ?? []).map((page) => (
+        {selectedPages.length === 0 ? <div className="studio-empty">没有 SELECTED 页面。</div> : null}
+        {selectedPages.map((page) => (
           <article className="studio-grant-card" key={page.id}>
             <div><strong>{page.title}</strong><span>/{page.slug}</span></div>
             <div className="studio-grant-people">
@@ -84,6 +90,26 @@ export default async function StudioAccess() {
             </div>
           </article>
         ))}
+      </section>
+
+      <section className="studio-section">
+        <div className="studio-section-head"><div><p className="micro-label">SELECTED BLOCKS</p><h2>Page block grants</h2></div></div>
+        {(blocks ?? []).length === 0 ? <div className="studio-empty">没有 SELECTED Block。Page 内某一小块也可以单独只开放给指定成员。</div> : null}
+        {(blocks ?? []).map((block) => {
+          const page = pageById.get(block.page_id)
+          return (
+            <article className="studio-grant-card" key={block.id}>
+              <div><strong>{block.title || block.label || block.block_key}</strong><span>{page ? `/${page.slug}` : 'page'} · {block.block_key}</span></div>
+              <div className="studio-grant-people">
+                {approved.map((person) => {
+                  const allowed = (blockGrants ?? []).some((g) => g.block_id === block.id && g.user_id === person.id)
+                  const action = allowed ? revokeBlockAccess : grantBlockAccess
+                  return <form action={action} key={person.id}><input type="hidden" name="block_id" value={block.id} /><input type="hidden" name="user_id" value={person.id} /><span>{person.display_name || person.email}</span><button type="submit">{allowed ? 'Revoke' : 'Allow'}</button></form>
+                })}
+              </div>
+            </article>
+          )
+        })}
       </section>
 
       <section className="studio-section">
