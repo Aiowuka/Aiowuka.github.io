@@ -1,8 +1,14 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import MarkdownContent from '@/components/markdown-content'
 import { PublicFrame } from '@/components/public-frame'
 import { getCollectionItems, getMediaAssets, getNavigation, getPageBlocks, getPageBySlug } from '@/lib/cms'
+
+function formatDate(value: string | null | undefined) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
+}
 
 function renderBlock(block: Awaited<ReturnType<typeof getPageBlocks>>[number]) {
   if (block.kind === 'status') {
@@ -25,7 +31,26 @@ function renderBlock(block: Awaited<ReturnType<typeof getPageBlocks>>[number]) {
   )
 }
 
-export default async function CmsPageRoute({ params }: { params: Promise<{ slug: string }> }) {
+type PageProps = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  if (slug === 'home') return {}
+  const page = await getPageBySlug(slug)
+  if (!page) return { robots: { index: false, follow: false } }
+  const title = page.nav_label || page.title
+  const description = page.summary || `${title} — AIowuka`
+  const canonical = `/${slug}`
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: canonical, siteName: 'AIowuka', type: 'website' },
+    twitter: { card: 'summary', title, description },
+  }
+}
+
+export default async function CmsPageRoute({ params }: PageProps) {
   const { slug } = await params
   if (slug === 'home') redirect('/')
 
@@ -50,6 +75,7 @@ export default async function CmsPageRoute({ params }: { params: Promise<{ slug:
         <section className="collection-list">
           {items.length ? items.map((item, index) => {
             const cover = item.cover_media_id ? coverMedia.get(item.cover_media_id) : null
+            const published = formatDate(item.published_at || item.created_at)
             return (
               <Link className={`collection-row${cover ? ' has-cover' : ''}`} href={`/${slug}/${item.slug}`} key={item.id}>
                 <span className="collection-index">{String(index + 1).padStart(2, '0')}</span>
@@ -58,12 +84,16 @@ export default async function CmsPageRoute({ params }: { params: Promise<{ slug:
                     <img src={cover.url} alt={cover.alt_text || cover.title || item.title} />
                   </div>
                 ) : null}
-                <div>
+                <div className="collection-copy">
                   <div className="collection-heading">
                     <h2>{item.title}</h2>
                     {item.featured ? <span className="tiny-badge">FEATURED</span> : null}
                   </div>
                   {item.summary ? <p>{item.summary}</p> : null}
+                  <div className="collection-meta">
+                    {published ? <time dateTime={item.published_at || item.created_at}>{published}</time> : null}
+                    {item.tags?.map((tag) => <span key={tag}>#{tag}</span>)}
+                  </div>
                 </div>
                 <span className="collection-arrow">→</span>
               </Link>
