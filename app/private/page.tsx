@@ -5,6 +5,11 @@ import { currentProfile } from '@/lib/access'
 
 export const dynamic = 'force-dynamic'
 
+function formatDate(value: string | null | undefined) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
+}
+
 export default async function PrivatePage() {
   const { profile } = await currentProfile()
   if (!profile) redirect('/login')
@@ -12,9 +17,11 @@ export default async function PrivatePage() {
   const supabase = await createClient()
   const { data: items } = await supabase
     .from('content_items')
-    .select('id,slug,title,summary,visibility,updated_at')
+    .select('id,slug,title,summary,visibility,content_type,tags,published_at,created_at,updated_at')
     .eq('published', true)
+    .neq('visibility', 'public')
     .order('sort_order')
+    .order('published_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
 
   const name = profile.display_name || '朋友'
@@ -51,24 +58,28 @@ export default async function PrivatePage() {
         <section className="private-library">
           <div className="library-label">
             <span>FOR YOU</span>
-            <p>{isOwner ? '作为 OWNER，你可以看到所有受保护内容，并从 Studio 修改整个网站。' : '这里只显示你当前有权限阅读的内容。'}</p>
+            <p>{isOwner ? '这里只列受保护且已发布的内容；草稿和网站管理在 Studio。' : '这里只显示超出 PUBLIC 范围、且你当前有权限阅读的内容。'}</p>
           </div>
 
           <div className="library-list">
-            {(items || []).length ? items!.map((item, index) => (
-              <Link className="library-item" href={`/private/${item.slug}`} key={item.id}>
-                <span className="library-no">{String(index + 1).padStart(2, '0')}</span>
-                <div>
-                  <span className="micro-label">{item.visibility}</span>
-                  <h2>{item.title}</h2>
-                  <p>{item.summary || '没有摘要。直接打开看看。'}</p>
-                </div>
-                <span className="library-arrow">→</span>
-              </Link>
-            )) : (
+            {(items || []).length ? items!.map((item, index) => {
+              const published = formatDate(item.published_at || item.created_at)
+              return (
+                <Link className="library-item" href={`/private/${item.slug}`} key={item.id}>
+                  <span className="library-no">{String(index + 1).padStart(2, '0')}</span>
+                  <div>
+                    <span className="micro-label">{item.visibility} / {item.content_type}{published ? ` / ${published}` : ''}</span>
+                    <h2>{item.title}</h2>
+                    <p>{item.summary || '没有摘要。直接打开看看。'}</p>
+                    {item.tags?.length ? <div className="private-tags">{item.tags.slice(0, 5).map((tag: string) => <span key={tag}>#{tag}</span>)}</div> : null}
+                  </div>
+                  <span className="library-arrow">→</span>
+                </Link>
+              )
+            }) : (
               <div className="empty-note">
                 <p className="portal-handnote">这里暂时还是空的。</p>
-                <span>等我放点东西进来。</span>
+                <span>你当前没有额外的受保护内容。</span>
               </div>
             )}
           </div>
