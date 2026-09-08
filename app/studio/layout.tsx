@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { currentProfile } from '@/lib/access'
 import './studio.css'
+import './studio-extras.css'
 
 const studioNav = [
   ['Overview', '/studio'],
