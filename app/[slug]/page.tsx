@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { PublicFrame } from '@/components/public-frame'
-import { getCollectionItems, getNavigation, getPageBlocks, getPageBySlug } from '@/lib/cms'
+import { getCollectionItems, getMediaAssets, getNavigation, getPageBlocks, getPageBySlug } from '@/lib/cms'
 
 function renderBlock(block: Awaited<ReturnType<typeof getPageBlocks>>[number]) {
   if (block.kind === 'status') {
@@ -35,6 +35,7 @@ export default async function CmsPageRoute({ params }: { params: Promise<{ slug:
     getPageBlocks(page.id),
     page.collection_type ? getCollectionItems(page.collection_type) : Promise.resolve([]),
   ])
+  const coverMedia = await getMediaAssets(items.map((item) => item.cover_media_id))
 
   return (
     <PublicFrame navigation={navigation} activeHref={`/${slug}`}>
@@ -46,19 +47,27 @@ export default async function CmsPageRoute({ params }: { params: Promise<{ slug:
 
       {page.template === 'collection' ? (
         <section className="collection-list">
-          {items.length ? items.map((item, index) => (
-            <Link className="collection-row" href={`/${slug}/${item.slug}`} key={item.id}>
-              <span className="collection-index">{String(index + 1).padStart(2, '0')}</span>
-              <div>
-                <div className="collection-heading">
-                  <h2>{item.title}</h2>
-                  {item.featured ? <span className="tiny-badge">FEATURED</span> : null}
+          {items.length ? items.map((item, index) => {
+            const cover = item.cover_media_id ? coverMedia.get(item.cover_media_id) : null
+            return (
+              <Link className={`collection-row${cover ? ' has-cover' : ''}`} href={`/${slug}/${item.slug}`} key={item.id}>
+                <span className="collection-index">{String(index + 1).padStart(2, '0')}</span>
+                {cover ? (
+                  <div className="collection-cover">
+                    <img src={cover.url} alt={cover.alt_text || cover.title || item.title} />
+                  </div>
+                ) : null}
+                <div>
+                  <div className="collection-heading">
+                    <h2>{item.title}</h2>
+                    {item.featured ? <span className="tiny-badge">FEATURED</span> : null}
+                  </div>
+                  {item.summary ? <p>{item.summary}</p> : null}
                 </div>
-                {item.summary ? <p>{item.summary}</p> : null}
-              </div>
-              <span className="collection-arrow">→</span>
-            </Link>
-          )) : (
+                <span className="collection-arrow">→</span>
+              </Link>
+            )
+          }) : (
             <div className="empty-paper">
               <p>这里还没有内容。</p>
               <span>Content added in Studio will appear here automatically.</span>
