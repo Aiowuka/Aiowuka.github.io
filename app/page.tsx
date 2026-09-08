@@ -1,194 +1,141 @@
 import Link from 'next/link'
 
-const trajectories = [
+const shelves = [
   {
-    index: '01',
-    title: 'AI 与群体智能',
-    en: 'AI / collective intelligence',
-    copy: '研究 Agent、群体协作，以及一个系统怎样知道什么能力真的可以被放弃。',
+    id: 'research',
+    label: 'Research',
+    title: '研究',
+    copy: '关于 AI、群体智能、分布式系统，以及还没有被完全回答的问题。',
+    tags: '#AI   #群体智能   #科研   #论文',
+    tone: 'research',
   },
   {
-    index: '02',
-    title: '飞控与无人系统',
-    en: 'flight control / autonomy',
-    copy: '把控制、感知和真实硬件接起来，关注能够在现实环境里工作的自主系统。',
+    id: 'projects',
+    label: 'Projects',
+    title: '项目',
+    copy: '把想法变成可以运行的系统，从无人机到工具，从硬件到软件。',
+    tags: '#UAV   #ROS   #嵌入式   #BUILD',
+    tone: 'projects',
   },
   {
-    index: '03',
-    title: '做东西，也记录过程',
-    en: 'build / document / iterate',
-    copy: '代码、实验、网页、机器人和还没成形的想法，都会在这里慢慢留下痕迹。',
+    id: 'photos',
+    label: 'Photos',
+    title: '照片',
+    copy: '沿途的风景、城市、天气，以及一些我觉得值得留下的瞬间。',
+    tags: '#照片   #旅行   #日常',
+    tone: 'photos',
+  },
+  {
+    id: 'music',
+    label: 'Music',
+    title: '音乐',
+    copy: '在旋律和节奏里，找到另一种秩序。这里以后会放歌单和最近在听。',
+    tags: '#歌单   #推荐   #生活',
+    tone: 'music',
   },
 ]
 
-const notes = [
-  ['Now', '正在把研究、工程项目和个人记录整理成一个长期可维护的工作与展示空间。'],
-  ['Study', '南京航空航天大学 · 飞行器控制与信息工程。'],
-  ['Open', '公开部分只展示我愿意被看见的内容；其余内容按访问权限开放。'],
+const doing = [
+  '辅导员 AI 系统 · 上线准备',
+  '群体智能 / K-space 研究',
+  '无人机与机器人相关项目',
+  '数学建模 · 准备中',
+  '记录一些生活与思考',
 ]
 
 export default function Home() {
   return (
-    <div className="site-frame">
-      <header className="masthead">
-        <Link className="wordmark" href="/">AIowuka</Link>
-        <div className="masthead-meta">Nanjing · 2026</div>
-        <nav className="masthead-nav" aria-label="Primary">
-          <a href="#now">Now</a>
-          <a href="#notes">Notes</a>
-          <a href="#projects">Projects</a>
-          <Link href="/private">Portal</Link>
+    <div className="journal-shell">
+      <aside className="personal-rail">
+        <div>
+          <Link href="/" className="scribble-mark">Aiowuka</Link>
+          <p className="rail-mantra">Same planet.<br/>Different perspective.</p>
+        </div>
+
+        <nav className="rail-nav" aria-label="Personal navigation">
+          <a className="active" href="#home"><span />首页</a>
+          <a href="#about">关于我</a>
+          <a href="#research">研究</a>
+          <a href="#projects">项目</a>
+          <a href="#photos">照片</a>
+          <a href="#music">音乐</a>
+          <a href="#notes">随记</a>
         </nav>
-      </header>
 
-      <main>
-        <section className="intro" id="about">
-          <div className="eyebrow">Personal index / 个人索引</div>
+        <p className="rail-note">Good ideas<br/>usually start<br/>somewhere messy.</p>
 
-          <div className="intro-grid">
-            <div className="intro-title">
-              <h1>AIowuka</h1>
-              <p className="intro-kicker">I build, study, test, and leave traces.</p>
-            </div>
+        <div className="rail-bottom">
+          <p>Nanjing, China<br/>NUAA ✈</p>
+          <div className="keep-dot"><i /> KEEP EXPLORING</div>
+        </div>
+      </aside>
 
-            <div className="intro-note">
-              <p className="intro-cn">你好，我是 AIowuka。</p>
-              <p>
-                南京航空航天大学飞控方向学生。我的兴趣在 AI、Agent、无人系统、控制，以及那些还没有被完整定义的问题。
-              </p>
-              <p className="intro-en">
-                Flight control student at NUAA, interested in AI, agents, autonomy, control systems, and unfinished questions worth building around.
-              </p>
-            </div>
+      <main className="journal-main" id="home">
+        <header className="journal-topbar">
+          <span>AIowuka's little corner of the internet</span>
+          <div className="topbar-actions">
+            <span aria-hidden="true">⌕</span>
+            <span aria-hidden="true">☼</span>
+            <span>中 / EN</span>
+            <Link href="/private">个人空间 ↗</Link>
+          </div>
+        </header>
+
+        <section className="hero-desk">
+          <div className="hero-photo" aria-label="Photo placeholder for a personal sunset photograph">
+            <div className="hero-sun" />
+            <div className="hero-skyline" />
+            <p className="photo-handwriting">在复杂的世界里，<br/>做一个更有温度的探索者。</p>
+            <span className="photo-caption">same sky,<br/>different stories.</span>
           </div>
 
-          <div className="fact-rail" aria-label="Profile facts">
-            <div className="fact-cell">
-              <span>01 / BASE</span>
-              <strong>Nanjing, China</strong>
-            </div>
-            <div className="fact-cell">
-              <span>02 / FIELD</span>
-              <strong>Flight Control</strong>
-            </div>
-            <div className="fact-cell">
-              <span>03 / FOCUS</span>
-              <strong>AI · Agents · Autonomy</strong>
-            </div>
-            <div className="fact-cell fact-link">
-              <span>04 / ELSEWHERE</span>
-              <a href="https://github.com/Aiowuka" target="_blank" rel="noreferrer">GitHub ↗</a>
-            </div>
+          <div className="hero-copy" id="about">
+            <p className="hand-title">记录，<br/>构建，<br/>然后继续出发。</p>
+            <p className="about-copy">我是飞行器控制与信息工程方向的学生，对技术、世界和生活都充满好奇。喜欢动手，喜欢思考，也喜欢记录。</p>
+            <p className="about-copy">希望在这个有点混乱但很美的世界里，构建一些有价值的东西。</p>
+            <a className="ink-button" href="#research">了解我 <span>→</span></a>
           </div>
+
+          <aside className="doing-note">
+            <div className="pin-row"><i /> <strong>现在在做</strong></div>
+            <ul>
+              {doing.map((item) => <li key={item}><span />{item}</li>)}
+            </ul>
+            <p>慢一点，<br/>但走得更远。</p>
+          </aside>
         </section>
 
-        <section className="chapter" id="now">
-          <div className="chapter-heading">
-            <span className="chapter-no">I</span>
-            <div>
-              <div className="eyebrow">Current trajectories</div>
-              <h2>现在在往哪里走</h2>
-            </div>
-          </div>
-
-          <div className="trajectory-list">
-            {trajectories.map((item) => (
-              <article className="trajectory" key={item.index}>
-                <div className="trajectory-index">{item.index}</div>
-                <div className="trajectory-main">
-                  <h3>{item.title}</h3>
-                  <p>{item.copy}</p>
-                </div>
-                <div className="trajectory-en">{item.en}</div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="notes-layout" id="notes">
-          <div className="notes-statement">
-            <div className="eyebrow">Notebook / 记录</div>
-            <p>
-              我不太想把这里做成一份静态简历。
-              <br />
-              更希望它像一个持续变化的索引：今天在研究什么、做什么、听什么、拍到什么，都会慢慢长出来。
-            </p>
-          </div>
-
-          <div className="notes-ledger">
-            {notes.map(([label, text]) => (
-              <div className="ledger-row" key={label}>
-                <span>{label}</span>
-                <p>{text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="projects" id="projects">
-          <div className="chapter-heading compact">
-            <span className="chapter-no">II</span>
-            <div>
-              <div className="eyebrow">Selected threads</div>
-              <h2>正在展开的项目</h2>
-            </div>
-          </div>
-
-          <div className="project-lines">
-            <article className="project-line">
-              <div className="project-type">RESEARCH</div>
-              <div>
-                <h3>Collective Intelligence</h3>
-                <p>围绕 Agent 群体、能力冗余与未来任务空间展开的研究。</p>
-              </div>
-              <span>ongoing</span>
+        <section className="shelf-grid">
+          {shelves.map((item) => (
+            <article className="shelf-card" id={item.id} key={item.id}>
+              <div className={`shelf-visual ${item.tone}`} aria-hidden="true"><span>{item.label}</span></div>
+              <div className="shelf-heading"><h2>{item.title}</h2><span>→</span></div>
+              <p>{item.copy}</p>
+              <small>{item.tags}</small>
             </article>
-            <article className="project-line">
-              <div className="project-type">SYSTEM</div>
-              <div>
-                <h3>AI-assisted Workflows</h3>
-                <p>把 AI 从聊天窗口变成能够参与真实工作流、数据和工具链的系统。</p>
-              </div>
-              <span>building</span>
-            </article>
-            <article className="project-line">
-              <div className="project-type">HARDWARE</div>
-              <div>
-                <h3>Autonomous Systems</h3>
-                <p>无人机、传感器、嵌入式与现实世界里的控制和自主。</p>
-              </div>
-              <span>field notes</span>
-            </article>
+          ))}
+        </section>
+
+        <section className="notes-board" id="notes">
+          <div className="paper-strip">
+            <span className="paperclip" aria-hidden="true">⌁</span>
+            <p className="hand-note">保持好奇，保持记录。</p>
+            <span className="thin-line" />
+          </div>
+          <div className="planet-note">
+            <span>A SMALL PERSON</span>
+            <span>ON A BIG PLANET.</span>
           </div>
         </section>
 
-        <section className="media-shelf" aria-label="Future media shelf">
-          <div className="media-title">
-            <div className="eyebrow">Life outside the terminal</div>
-            <h2>照片、音乐，和一些别的东西</h2>
-          </div>
-          <div className="media-placeholder photo-placeholder">
-            <span>PHOTO / soon</span>
-          </div>
-          <div className="media-placeholder sound-placeholder">
-            <span>SOUND / soon</span>
-          </div>
-          <p className="media-copy">这里以后会放照片、音乐、旅行和生活片段。不是作品集，只是想保留一点不那么“项目化”的东西。</p>
-        </section>
-
-        <section className="portal-strip">
+        <section className="portal-corner">
           <div>
-            <div className="eyebrow">Access boundary</div>
-            <p>有些内容公开，有些只留给特定的人。登录只证明身份，权限由我单独决定。</p>
+            <span className="micro-label">PRIVATE / FRIENDS / SELECTED</span>
+            <p>有些东西我只想留给熟悉的人。登录不自动获得权限，但可以先敲门。</p>
           </div>
-          <Link className="portal-link" href="/private">进入 Portal <span>↗</span></Link>
+          <Link href="/private">进入个人空间 <span>→</span></Link>
         </section>
       </main>
-
-      <footer className="site-footer">
-        <span>AIowuka · aiowuka.me</span>
-        <span>Built slowly, kept deliberately.</span>
-      </footer>
     </div>
   )
 }
