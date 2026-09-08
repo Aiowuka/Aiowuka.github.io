@@ -1,0 +1,119 @@
+.portal-page{
+  width:min(1120px,calc(100% - 40px));
+  margin:0 auto;
+  padding:30px 0 50px;
+}
+.portal-header{
+  min-height:68px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  border-bottom:1px solid var(--line);
+}
+.portal-wordmark{
+  font-family:"Segoe Print","Bradley Hand","KaiTi",cursive;
+  font-size:30px;
+  letter-spacing:-.08em;
+  transform:rotate(-2deg);
+}
+.portal-actions{display:flex;align-items:center;gap:18px;color:var(--soft);font-size:11px}
+.text-button{border:0;background:transparent;padding:0;cursor:pointer;color:inherit;font:inherit}
+.text-button:hover,.portal-actions a:hover{color:var(--orange)}
+.portal-intro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 280px;
+  gap:70px;
+  padding:70px 0 62px;
+  align-items:end;
+}
+.portal-intro h1{
+  margin:16px 0 0;
+  font-family:"STKaiti","KaiTi",Georgia,serif;
+  font-size:clamp(50px,7vw,86px);
+  line-height:1.08;
+  font-weight:500;
+  letter-spacing:.02em;
+}
+.portal-handnote{
+  margin:0;
+  font-family:"STKaiti","KaiTi","Segoe Print",cursive;
+  font-size:24px;
+  line-height:1.55;
+  transform:rotate(-4deg);
+}
+.portal-handnote:after{content:"";display:block;width:76px;border-top:1px solid currentColor;margin:12px 0 0 24px;transform:rotate(-7deg)}
+.waiting-paper{
+  max-width:720px;
+  margin:0 auto 80px;
+  padding:32px 34px;
+  display:grid;
+  grid-template-columns:16px 1fr;
+  gap:17px;
+  background:#f8f4eb;
+  border:1px solid var(--line);
+  box-shadow:0 14px 32px rgba(60,48,32,.08);
+  transform:rotate(-1deg);
+}
+.pin-dot{width:10px;height:10px;border-radius:50%;background:var(--orange);margin-top:7px}
+.waiting-paper h2{margin:0 0 10px;font-size:23px}
+.waiting-paper p{margin:0;color:var(--soft);font-size:13px;line-height:1.8}
+.private-library{display:grid;grid-template-columns:220px 1fr;gap:55px;border-top:1px solid var(--line);padding-top:28px}
+.library-label>span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;letter-spacing:.18em;color:var(--muted)}
+.library-label p{margin:13px 0 0;color:var(--soft);font-size:11px;line-height:1.7}
+.library-list{border-top:1px solid var(--line)}
+.library-item{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 28px;
+  gap:18px;
+  align-items:start;
+  padding:25px 0 27px;
+  border-bottom:1px solid var(--line);
+  transition:padding-left .18s ease,background .18s ease;
+}
+.library-item:hover{padding-left:9px;background:rgba(233,161,138,.08)}
+.library-no{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;color:var(--muted);padding-top:4px}
+.library-item h2{margin:7px 0 8px;font-size:25px;letter-spacing:-.03em}
+.library-item p{margin:0;color:var(--soft);font-size:12px;line-height:1.7}
+.library-arrow{font-size:20px;justify-self:end;padding-top:17px}
+.empty-note{padding:60px 0 80px;text-align:center;color:var(--soft)}
+.empty-note .portal-handnote{display:inline-block}.empty-note span{display:block;margin-top:20px;font-size:11px}
+.portal-footer{margin-top:90px;padding:24px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8px;letter-spacing:.1em}
+
+.login-page{min-height:100vh;display:grid;grid-template-columns:minmax(280px,.72fr) minmax(480px,1.28fr)}
+.login-side{
+  min-height:100vh;
+  padding:44px clamp(28px,4vw,62px);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  border-right:1px solid var(--line);
+  background:
+    radial-gradient(circle at 70% 25%,rgba(233,161,138,.17),transparent 23%),
+    rgba(245,240,230,.72);
+}
+.login-side>div{max-width:330px}.login-side>div>p:last-child{color:var(--soft);font-size:12px;line-height:1.8;margin-top:28px}.login-side>a:last-child{font-size:11px;color:var(--soft)}
+.login-main{display:flex;align-items:center;justify-content:center;padding:50px 32px}
+.login-card{width:min(500px,100%)}
+.login-card h1{margin:15px 0 18px;font-family:"STKaiti","KaiTi",Georgia,serif;font-size:clamp(46px,6vw,68px);font-weight:500;line-height:1}
+.login-card>.muted{max-width:460px;font-size:12px;line-height:1.8}
+.login-card .field{margin-top:30px}.login-card .field input{font-size:17px;padding:15px 14px}.login-card .button{min-width:150px;margin-top:4px}.login-error{padding:10px 12px;border-left:2px solid var(--orange);background:rgba(217,105,69,.08);font-size:11px;color:#8b3d29}
+.login-switch{margin-top:18px;color:var(--muted);font-size:10px;border-bottom:1px solid var(--line);padding-bottom:2px}
+
+/* Admin is still a work surface, but visually belongs to the same site. */
+.admin-shell{padding-top:34px!important}
+.admin-shell>.row:first-child{min-height:58px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.admin-shell>h1{font-family:"STKaiti","KaiTi",Georgia,serif!important;font-weight:500!important;margin-top:56px!important}
+.admin-shell>.panel{position:relative;margin-top:28px!important;background:#f8f4eb!important;box-shadow:0 12px 28px rgba(60,48,32,.05)}
+.admin-shell>.panel:before{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--orange);top:16px;right:16px;opacity:.78}
+.admin-shell .content-card{padding:22px 0;border-top:1px solid var(--line)}
+.admin-shell select{background:#fbf8f1;border:1px solid var(--line);padding:8px}
+
+@media(max-width:760px){
+  .portal-page{width:min(100% - 24px,1120px);padding-top:16px}
+  .portal-header{align-items:flex-start;padding:12px 0}.portal-actions{flex-wrap:wrap;justify-content:flex-end;gap:10px 14px}
+  .portal-intro{grid-template-columns:1fr;gap:36px;padding:52px 0}.portal-intro h1{font-size:54px}.portal-handnote{font-size:21px}
+  .private-library{grid-template-columns:1fr;gap:28px}.library-label{max-width:420px}.library-item{grid-template-columns:34px 1fr 20px;gap:12px}
+  .portal-footer{flex-direction:column;margin-top:58px}
+  .login-page{display:block}.login-side{min-height:260px;padding:28px 24px;border-right:0;border-bottom:1px solid var(--line);gap:42px}.login-side>div>p:last-child{margin-top:18px}.login-main{padding:54px 24px 70px}.login-card h1{font-size:50px}
+}
