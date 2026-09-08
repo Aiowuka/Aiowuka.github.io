@@ -4,6 +4,7 @@ import './portal.css'
 import './article.css'
 import './admin.css'
 import './language-shell.css'
+import './cms-public.css'
 
 export const metadata: Metadata = {
   title: 'AIowuka — personal index',
