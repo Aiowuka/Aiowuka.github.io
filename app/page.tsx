@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { PublicFrame } from '@/components/public-frame'
 import {
+  getMediaAsset,
   getNavigation,
   getPageBlocks,
   getPageBySlug,
@@ -33,12 +34,18 @@ export default async function Home() {
       'notes_note',
       'planet_note_top',
       'planet_note_bottom',
+      'hero_media_id',
     ]),
     getPageBySlug('home'),
     getPagesBySlugs(['research', 'projects', 'photos', 'music']),
   ])
 
-  const blocks = homePage ? await getPageBlocks(homePage.id) : []
+  const heroMediaId = typeof settings.hero_media_id === 'string' ? settings.hero_media_id : null
+  const [blocks, heroMedia] = await Promise.all([
+    homePage ? getPageBlocks(homePage.id) : Promise.resolve([]),
+    getMediaAsset(heroMediaId),
+  ])
+
   const currentBlock = blocks.find((block) => block.block_key === 'current')
   const doing = (currentBlock?.body_markdown || '')
     .split('\n')
@@ -65,9 +72,15 @@ export default async function Home() {
   return (
     <PublicFrame navigation={navigation} activeHref="/">
       <section className="hero-desk">
-        <div className="hero-photo" aria-label="Personal hero photo">
-          <div className="hero-sun" />
-          <div className="hero-skyline" />
+        <div className={`hero-photo${heroMedia ? ' has-real-media' : ''}`} aria-label={heroMedia?.alt_text || 'Personal hero photo'}>
+          {heroMedia ? (
+            <img className="hero-photo-image" src={heroMedia.url} alt={heroMedia.alt_text || heroMedia.title || 'AIowuka homepage photo'} />
+          ) : (
+            <>
+              <div className="hero-sun" />
+              <div className="hero-skyline" />
+            </>
+          )}
           <p className="photo-handwriting"><WithBreak text={heroPhotoNote} /></p>
           <span className="photo-caption"><WithBreak text={heroPhotoCaption} /></span>
         </div>
