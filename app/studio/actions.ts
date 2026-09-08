@@ -151,13 +151,14 @@ export async function saveContentItem(formData: FormData) {
   if (coverMediaId) {
     const { data: cover, error: coverError } = await supabase
       .from('media_assets')
-      .select('id,mime_type,visibility')
+      .select('id,mime_type,visibility,alt_text')
       .eq('id', coverMediaId)
       .maybeSingle()
     if (coverError) throw coverError
     if (!cover) throw new Error('COVER_NOT_FOUND')
     if (!cover.mime_type?.startsWith('image/')) throw new Error('COVER_MUST_BE_IMAGE')
     if (!mediaCanServe(contentVisibility, cover.visibility as Visibility)) throw new Error('COVER_VISIBILITY_TOO_PRIVATE')
+    if (contentVisibility === 'public' && !cover.alt_text?.trim()) throw new Error('PUBLIC_COVER_ALT_REQUIRED')
   }
 
   const payload = {
@@ -299,21 +300,34 @@ export async function saveMediaMetadata(formData: FormData) {
   const supabase = await createClient()
   const id = text(formData, 'id', true)
   const nextVisibility = visibility(formData)
+  const nextAltText = text(formData, 'alt_text')
 
-  const [{ data: references, error: referencesError }, { data: hero, error: heroError }] = await Promise.all([
+  const [
+    { data: media, error: mediaError },
+    { data: references, error: referencesError },
+    { data: hero, error: heroError },
+  ] = await Promise.all([
+    supabase.from('media_assets').select('mime_type').eq('id', id).maybeSingle(),
     supabase.from('content_items').select('id,visibility').eq('cover_media_id', id),
     supabase.from('site_settings').select('value').eq('key', 'hero_media_id').maybeSingle(),
   ])
+  if (mediaError) throw mediaError
   if (referencesError) throw referencesError
   if (heroError) throw heroError
+  if (!media) throw new Error('MEDIA_NOT_FOUND')
+  if (nextVisibility === 'public' && media.mime_type?.startsWith('image/') && !nextAltText) throw new Error('PUBLIC_IMAGE_ALT_REQUIRED')
   if (hero?.value === id && nextVisibility !== 'public') throw new Error('HOMEPAGE_HERO_MUST_STAY_PUBLIC')
+  if (hero?.value === id && !nextAltText) throw new Error('HOMEPAGE_HERO_ALT_REQUIRED')
   if ((references ?? []).some((item) => !mediaCanServe(item.visibility as Visibility, nextVisibility))) {
     throw new Error('MEDIA_VISIBILITY_BREAKS_CONTENT_COVER')
+  }
+  if ((references ?? []).some((item) => item.visibility === 'public') && !nextAltText) {
+    throw new Error('PUBLIC_COVER_ALT_REQUIRED')
   }
 
   const { error } = await supabase.from('media_assets').update({
     title: text(formData, 'title') || null,
-    alt_text: text(formData, 'alt_text') || null,
+    alt_text: nextAltText || null,
     caption: text(formData, 'caption') || null,
     visibility: nextVisibility,
   }).eq('id', id)
