@@ -43,10 +43,10 @@ function sectionFor(contentType: string) {
   return 'notes'
 }
 
-function coverCanServe(contentVisibility: Visibility, coverVisibility: Visibility) {
+function mediaCanServe(contentVisibility: Visibility, mediaVisibility: Visibility) {
   if (contentVisibility === 'owner') return true
-  if (contentVisibility === 'public') return coverVisibility === 'public'
-  return coverVisibility === 'public' || coverVisibility === 'member'
+  if (contentVisibility === 'public') return mediaVisibility === 'public'
+  return mediaVisibility === 'public' || mediaVisibility === 'member'
 }
 
 function refreshCms(paths: string[] = []) {
@@ -157,7 +157,7 @@ export async function saveContentItem(formData: FormData) {
     if (coverError) throw coverError
     if (!cover) throw new Error('COVER_NOT_FOUND')
     if (!cover.mime_type?.startsWith('image/')) throw new Error('COVER_MUST_BE_IMAGE')
-    if (!coverCanServe(contentVisibility, cover.visibility as Visibility)) throw new Error('COVER_VISIBILITY_TOO_PRIVATE')
+    if (!mediaCanServe(contentVisibility, cover.visibility as Visibility)) throw new Error('COVER_VISIBILITY_TOO_PRIVATE')
   }
 
   const payload = {
@@ -173,7 +173,7 @@ export async function saveContentItem(formData: FormData) {
     sort_order: integer(formData, 'sort_order'),
     metadata,
     cover_media_id: coverMediaId,
-    published_at: published ? (previous?.published_at || new Date().toISOString()) : null,
+    published_at: previous?.published_at || (published ? new Date().toISOString() : null),
   }
 
   const result = id
@@ -298,11 +298,24 @@ export async function saveMediaMetadata(formData: FormData) {
   await requireOwner()
   const supabase = await createClient()
   const id = text(formData, 'id', true)
+  const nextVisibility = visibility(formData)
+
+  const [{ data: references, error: referencesError }, { data: hero, error: heroError }] = await Promise.all([
+    supabase.from('content_items').select('id,visibility').eq('cover_media_id', id),
+    supabase.from('site_settings').select('value').eq('key', 'hero_media_id').maybeSingle(),
+  ])
+  if (referencesError) throw referencesError
+  if (heroError) throw heroError
+  if (hero?.value === id && nextVisibility !== 'public') throw new Error('HOMEPAGE_HERO_MUST_STAY_PUBLIC')
+  if ((references ?? []).some((item) => !mediaCanServe(item.visibility as Visibility, nextVisibility))) {
+    throw new Error('MEDIA_VISIBILITY_BREAKS_CONTENT_COVER')
+  }
+
   const { error } = await supabase.from('media_assets').update({
     title: text(formData, 'title') || null,
     alt_text: text(formData, 'alt_text') || null,
     caption: text(formData, 'caption') || null,
-    visibility: visibility(formData),
+    visibility: nextVisibility,
   }).eq('id', id)
   if (error) throw error
   refreshCms()
