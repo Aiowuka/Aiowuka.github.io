@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   },
   description: 'AIowuka — research, projects, photos, music, notes, and ongoing life.',
   applicationName: 'AIowuka',
-  alternates: { canonical: '/' },
+  alternates: {
+    canonical: '/',
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
   openGraph: {
     title: 'AIowuka — personal index',
     description: 'Research, projects, photos, music, notes, and ongoing life.',
