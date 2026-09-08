@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { PublicFrame } from '@/components/public-frame'
 import {
+  getCollectionItems,
   getMediaAsset,
   getNavigation,
   getPageBlocks,
@@ -22,8 +23,13 @@ function WithBreak({ text }: { text: string }) {
   return <>{parts.map((part, index) => <span key={`${part}-${index}`}>{part}{index < parts.length - 1 ? <br /> : null}</span>)}</>
 }
 
+function formatDate(value: string | null | undefined) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
+}
+
 export default async function Home() {
-  const [navigation, settings, homePage, shelfPages] = await Promise.all([
+  const [navigation, settings, homePage, shelfPages, notes, research, projects] = await Promise.all([
     getNavigation(),
     getSettings([
       'hero_title',
@@ -38,6 +44,9 @@ export default async function Home() {
     ]),
     getPageBySlug('home'),
     getPagesBySlugs(['research', 'projects', 'photos', 'music']),
+    getCollectionItems('note'),
+    getCollectionItems('research'),
+    getCollectionItems('project'),
   ])
 
   const heroMediaId = typeof settings.hero_media_id === 'string' ? settings.hero_media_id : null
@@ -68,6 +77,12 @@ export default async function Home() {
   const notesNote = settingText(settings, 'notes_note', '保持好奇，保持记录。')
   const planetTop = settingText(settings, 'planet_note_top', 'A SMALL PERSON')
   const planetBottom = settingText(settings, 'planet_note_bottom', 'ON A BIG PLANET.')
+
+  const recent = [
+    notes[0] ? { item: notes[0], section: 'notes', label: 'LATEST NOTE' } : null,
+    research[0] ? { item: research[0], section: 'research', label: 'RECENT RESEARCH' } : null,
+    projects[0] ? { item: projects[0], section: 'projects', label: 'RECENT PROJECT' } : null,
+  ].filter(Boolean) as Array<{ item: (typeof notes)[number]; section: string; label: string }>
 
   return (
     <PublicFrame navigation={navigation} activeHref="/">
@@ -114,6 +129,31 @@ export default async function Home() {
           )
         })}
       </section>
+
+      {recent.length ? (
+        <section className="home-recent">
+          <div className="home-recent-head">
+            <span className="micro-label">RECENTLY</span>
+            <p>最近写下、推进或整理的东西。</p>
+          </div>
+          <div className="home-recent-list">
+            {recent.map(({ item, section, label }) => (
+              <Link href={`/${section}/${item.slug}`} className="home-recent-item" key={`${section}-${item.id}`}>
+                <div>
+                  <span className="micro-label">{label}</span>
+                  <h2>{item.title}</h2>
+                  {item.summary ? <p>{item.summary}</p> : null}
+                </div>
+                <div className="home-recent-meta">
+                  {formatDate(item.published_at || item.created_at) ? <time dateTime={item.published_at || item.created_at}>{formatDate(item.published_at || item.created_at)}</time> : null}
+                  {item.tags?.slice(0, 3).map((tag) => <span key={tag}>#{tag}</span>)}
+                </div>
+                <span className="home-recent-arrow">→</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <Link className="notes-board" href="/notes">
         <div className="paper-strip">
