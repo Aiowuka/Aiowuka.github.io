@@ -5,6 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { registerUploadedMedia } from './actions'
 
 const MAX_BYTES = 20 * 1024 * 1024
+const ALLOWED_MIME = new Set([
+  'image/jpeg','image/png','image/webp','image/gif','image/avif','image/heic','image/heif',
+  'audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/x-wav','audio/flac',
+])
 
 export default function MediaUploader() {
   const [busy, setBusy] = useState(false)
@@ -28,13 +32,32 @@ export default function MediaUploader() {
       setMessage('File is larger than 20 MB.')
       return
     }
+    if (!ALLOWED_MIME.has(file.type)) {
+      setBusy(false)
+      setMessage('Unsupported file type. Use a common image or audio format.')
+      return
+    }
+
+    const visibility = String(formData.get('visibility') || 'owner')
+    const altText = String(formData.get('alt_text') || '').trim()
+    if (visibility === 'public' && file.type.startsWith('image/') && !altText) {
+      setBusy(false)
+      setMessage('Public images need alt text before upload.')
+      return
+    }
 
     const ext = file.name.toLowerCase().match(/\.[a-z0-9]{1,8}$/)?.[0] || ''
+    if (!ext) {
+      setBusy(false)
+      setMessage('The file needs a normal filename extension.')
+      return
+    }
+
     const storagePath = `${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}${ext}`
     const supabase = createClient()
 
     const { error: uploadError } = await supabase.storage.from('site-media').upload(storagePath, file, {
-      contentType: file.type || undefined,
+      contentType: file.type,
       upsert: false,
     })
     if (uploadError) {
@@ -49,9 +72,9 @@ export default function MediaUploader() {
     payload.set('mime_type', file.type)
     payload.set('byte_size', String(file.size))
     payload.set('title', String(formData.get('title') || ''))
-    payload.set('alt_text', String(formData.get('alt_text') || ''))
+    payload.set('alt_text', altText)
     payload.set('caption', String(formData.get('caption') || ''))
-    payload.set('visibility', String(formData.get('visibility') || 'owner'))
+    payload.set('visibility', visibility)
 
     try {
       await registerUploadedMedia(payload)
@@ -67,13 +90,14 @@ export default function MediaUploader() {
 
   return (
     <form onSubmit={submit} className="studio-form studio-paper">
-      <label>File<input type="file" name="file" accept="image/*,audio/*" required disabled={busy} /></label>
+      <label>File<input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,image/heif,audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/x-wav,audio/flac" required disabled={busy} /><span className="studio-field-help">Images or audio, up to 20 MB.</span></label>
       <div className="studio-form-grid">
         <label>Title<input name="title" disabled={busy} /></label>
-        <label>Alt text<input name="alt_text" disabled={busy} /></label>
+        <label>Alt text<input name="alt_text" disabled={busy} /><span className="studio-field-help">Required for PUBLIC images and homepage Hero.</span></label>
         <label>Visibility<select name="visibility" defaultValue="owner" disabled={busy}><option>public</option><option>member</option><option>selected</option><option>owner</option></select></label>
       </div>
       <label>Caption<textarea name="caption" rows={3} disabled={busy} /></label>
+      <p className="studio-publish-context">Cover rule: PUBLIC article → PUBLIC image. MEMBER / SELECTED article → PUBLIC or MEMBER image. OWNER content can use any image.</p>
       <button className="studio-primary" type="submit" disabled={busy}>{busy ? 'Uploading…' : 'Upload'}</button>
       {message ? <p className="studio-upload-message">{message}</p> : null}
     </form>
