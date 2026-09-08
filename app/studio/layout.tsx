@@ -12,6 +12,7 @@ const studioNav = [
   ['Navigation', '/studio/navigation'],
   ['Access', '/studio/access'],
   ['Settings', '/studio/settings'],
+  ['History', '/studio/history'],
 ]
 
 export default async function StudioLayout({ children }: { children: ReactNode }) {
