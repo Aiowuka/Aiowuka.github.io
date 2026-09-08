@@ -48,13 +48,39 @@ function ContentForm({ item, media }: { item?: any; media: any[] }) {
   )
 }
 
-export default async function StudioContent() {
+type Search = { q?: string | string[]; type?: string | string[]; status?: string | string[]; visibility?: string | string[] }
+
+function first(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+export default async function StudioContent({ searchParams }: { searchParams?: Promise<Search> }) {
   const supabase = await createClient()
   const [{ data: items }, { data: allMedia }] = await Promise.all([
     supabase.from('content_items').select('*').order('updated_at', { ascending: false }),
     supabase.from('media_assets').select('id,title,file_name,mime_type,visibility').order('created_at', { ascending: false }),
   ])
   const media = (allMedia ?? []).filter((m) => m.mime_type?.startsWith('image/'))
+
+  const search = searchParams ? await searchParams : undefined
+  const q = (first(search?.q) || '').trim().toLocaleLowerCase()
+  const type = first(search?.type) || 'all'
+  const status = first(search?.status) || 'all'
+  const visible = first(search?.visibility) || 'all'
+  const allItems = items ?? []
+  const filtered = allItems.filter((item) => {
+    if (type !== 'all' && item.content_type !== type) return false
+    if (visible !== 'all' && item.visibility !== visible) return false
+    if (status === 'published' && !item.published) return false
+    if (status === 'draft' && item.published) return false
+    if (status === 'featured' && !item.featured) return false
+    if (q) {
+      const haystack = [item.title, item.slug, item.summary, ...(item.tags ?? [])].filter(Boolean).join(' ').toLocaleLowerCase()
+      if (!haystack.includes(q)) return false
+    }
+    return true
+  })
+  const hasFilters = Boolean(q || type !== 'all' || status !== 'all' || visible !== 'all')
 
   return (
     <>
@@ -66,9 +92,19 @@ export default async function StudioContent() {
       </section>
 
       <section className="studio-section">
-        <div className="studio-section-head"><div><p className="micro-label">LIBRARY</p><h2>Existing content</h2></div><span className="studio-status">{(items ?? []).length} items</span></div>
-        {(items ?? []).length === 0 ? <div className="studio-empty">还没有内容。你在上面创建的第一篇内容会自动出现在对应页面。</div> : null}
-        {(items ?? []).map((item) => {
+        <div className="studio-section-head"><div><p className="micro-label">LIBRARY</p><h2>Existing content</h2></div><span className="studio-status">{filtered.length} shown · {allItems.length} total</span></div>
+        <form className="studio-library-filter" method="get">
+          <label className="studio-filter-search">Search<input name="q" defaultValue={first(search?.q) || ''} placeholder="title, slug, summary or tag" /></label>
+          <label>Type<select name="type" defaultValue={type}><option value="all">All types</option>{typeOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></label>
+          <label>Status<select name="status" defaultValue={status}><option value="all">All status</option><option value="published">Published</option><option value="draft">Draft</option><option value="featured">Featured</option></select></label>
+          <label>Visibility<select name="visibility" defaultValue={visible}><option value="all">All access</option>{visibilityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></label>
+          <button type="submit">Filter</button>
+          {hasFilters ? <Link href="/studio/content">Clear</Link> : null}
+        </form>
+
+        {allItems.length === 0 ? <div className="studio-empty">还没有内容。你在上面创建的第一篇内容会自动出现在对应页面。</div> : null}
+        {allItems.length > 0 && filtered.length === 0 ? <div className="studio-empty">没有匹配当前筛选条件的内容。清除筛选后可以看到全部。</div> : null}
+        {filtered.map((item) => {
           const href = `/${sectionFor(item.content_type)}/${item.slug}`
           return (
             <details className="studio-item" key={item.id}>
