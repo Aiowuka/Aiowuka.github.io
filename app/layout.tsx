@@ -9,8 +9,27 @@ import './cms-media.css'
 import './markdown.css'
 
 export const metadata: Metadata = {
-  title: 'AIowuka — personal index',
+  metadataBase: new URL('https://aiowuka.me'),
+  title: {
+    default: 'AIowuka — personal index',
+    template: '%s — AIowuka',
+  },
   description: 'AIowuka — research, projects, photos, music, notes, and ongoing life.',
+  applicationName: 'AIowuka',
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'AIowuka — personal index',
+    description: 'Research, projects, photos, music, notes, and ongoing life.',
+    url: '/',
+    siteName: 'AIowuka',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'AIowuka — personal index',
+    description: 'Research, projects, photos, music, notes, and ongoing life.',
+  },
+  robots: { index: true, follow: true },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
