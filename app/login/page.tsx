@@ -1,9 +1,15 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { currentProfile } from '@/lib/access'
 import LoginForm from './login-form'
 
 export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
+  title: 'Login',
+  robots: { index: false, follow: false, noarchive: true, nocache: true },
+}
 
 export default async function LoginPage() {
   const { profile } = await currentProfile()
