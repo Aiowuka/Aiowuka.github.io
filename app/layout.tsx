@@ -3,10 +3,11 @@ import './globals.css'
 import './portal.css'
 import './article.css'
 import './admin.css'
+import './language-shell.css'
 
 export const metadata: Metadata = {
-  title: 'AIowuka — 记录、构建，然后继续出发',
-  description: 'AIowuka 的个人网站：研究、项目、照片、音乐，以及正在发生的生活。',
+  title: 'AIowuka — personal index',
+  description: 'AIowuka — research, projects, photos, music, notes, and ongoing life.',
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
