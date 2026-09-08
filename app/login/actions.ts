@@ -1,13 +1,31 @@
 'use server'
+
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+
+function authBaseUrl() {
+  if (process.env.VERCEL_ENV === 'preview') {
+    const previewHost = process.env.VERCEL_BRANCH_URL || process.env.VERCEL_URL
+    if (previewHost) return previewHost.startsWith('http') ? previewHost : `https://${previewHost}`
+  }
+
+  if (process.env.VERCEL_ENV === 'production') {
+    return process.env.NEXT_PUBLIC_SITE_URL || 'https://aiowuka.me'
+  }
+
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+}
 
 export async function sendMagicLink(formData: FormData) {
   const email = String(formData.get('email') || '').trim().toLowerCase()
   if (!email || !email.includes('@')) redirect('/login?error=invalid-email')
+
   const supabase = await createClient()
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://aiowuka.me'
-  const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: `${siteUrl}/auth/callback` } })
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: `${authBaseUrl()}/auth/callback` },
+  })
+
   if (error) redirect('/login?error=send-failed')
   redirect('/login?sent=1')
 }
