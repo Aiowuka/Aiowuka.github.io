@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import MarkdownContent from '@/components/markdown-content'
 import { PublicFrame } from '@/components/public-frame'
 import { getContentItem, getMediaAsset, getNavigation, getPageBySlug } from '@/lib/cms'
 
@@ -33,7 +34,7 @@ export default async function ContentDetailPage({
             {cover.caption ? <figcaption>{cover.caption}</figcaption> : null}
           </figure>
         ) : null}
-        <div className="article-body">{item.body_markdown}</div>
+        <MarkdownContent className="article-body markdown-content" children={item.body_markdown} />
       </article>
     </PublicFrame>
   )
