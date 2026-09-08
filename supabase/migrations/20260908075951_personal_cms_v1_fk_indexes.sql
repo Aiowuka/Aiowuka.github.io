@@ -1,0 +1,11 @@
+create index if not exists block_access_created_by_idx on public.block_access(created_by);
+create index if not exists content_items_cover_media_idx on public.content_items(cover_media_id);
+create index if not exists content_versions_created_by_idx on public.content_versions(created_by);
+create index if not exists media_access_created_by_idx on public.media_access(created_by);
+create index if not exists media_assets_created_by_idx on public.media_assets(created_by);
+create index if not exists navigation_items_created_by_idx on public.navigation_items(created_by);
+create index if not exists navigation_items_page_id_idx on public.navigation_items(page_id);
+create index if not exists page_access_created_by_idx on public.page_access(created_by);
+create index if not exists page_blocks_created_by_idx on public.page_blocks(created_by);
+create index if not exists pages_created_by_idx on public.pages(created_by);
+create index if not exists site_settings_updated_by_idx on public.site_settings(updated_by);
