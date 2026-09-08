@@ -16,10 +16,24 @@ const shelfUi: Record<string, { tags: string; tone: string }> = {
   music: { tags: '#Playlist   #Listening   #Life', tone: 'music' },
 }
 
+function WithBreak({ text }: { text: string }) {
+  const parts = text.split(/\n/)
+  return <>{parts.map((part, index) => <span key={`${part}-${index}`}>{part}{index < parts.length - 1 ? <br /> : null}</span>)}</>
+}
+
 export default async function Home() {
   const [navigation, settings, homePage, shelfPages] = await Promise.all([
     getNavigation(),
-    getSettings(['hero_title', 'hero_body', 'portal_note']),
+    getSettings([
+      'hero_title',
+      'hero_body',
+      'portal_note',
+      'hero_photo_note',
+      'hero_photo_caption',
+      'notes_note',
+      'planet_note_top',
+      'planet_note_bottom',
+    ]),
     getPageBySlug('home'),
     getPagesBySlugs(['research', 'projects', 'photos', 'music']),
   ])
@@ -42,15 +56,20 @@ export default async function Home() {
     'portal_note',
     '有些东西我只想留给熟悉的人。登录不自动获得权限，但可以先敲门。',
   )
+  const heroPhotoNote = settingText(settings, 'hero_photo_note', '在复杂的世界里，\n做一个更有温度的探索者。')
+  const heroPhotoCaption = settingText(settings, 'hero_photo_caption', 'same sky,\ndifferent stories.')
+  const notesNote = settingText(settings, 'notes_note', '保持好奇，保持记录。')
+  const planetTop = settingText(settings, 'planet_note_top', 'A SMALL PERSON')
+  const planetBottom = settingText(settings, 'planet_note_bottom', 'ON A BIG PLANET.')
 
   return (
     <PublicFrame navigation={navigation} activeHref="/">
       <section className="hero-desk">
-        <div className="hero-photo" aria-label="Photo placeholder for a personal sunset photograph">
+        <div className="hero-photo" aria-label="Personal hero photo">
           <div className="hero-sun" />
           <div className="hero-skyline" />
-          <p className="photo-handwriting">在复杂的世界里，<br/>做一个更有温度的探索者。</p>
-          <span className="photo-caption">same sky,<br/>different stories.</span>
+          <p className="photo-handwriting"><WithBreak text={heroPhotoNote} /></p>
+          <span className="photo-caption"><WithBreak text={heroPhotoCaption} /></span>
         </div>
 
         <div className="hero-copy">
@@ -86,12 +105,12 @@ export default async function Home() {
       <Link className="notes-board" href="/notes">
         <div className="paper-strip">
           <span className="paperclip" aria-hidden="true">⌁</span>
-          <p className="hand-note">保持好奇，保持记录。</p>
+          <p className="hand-note">{notesNote}</p>
           <span className="thin-line" />
         </div>
         <div className="planet-note">
-          <span>A SMALL PERSON</span>
-          <span>ON A BIG PLANET.</span>
+          <span>{planetTop}</span>
+          <span>{planetBottom}</span>
         </div>
       </Link>
 
