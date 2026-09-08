@@ -18,6 +18,30 @@ Primary emotional qualities:
 - technical without looking like a tech company
 - able to contain research, projects, photos, music, notes, and private sharing in one world
 
+## Language system
+
+The public site is **English UI / Chinese content**.
+
+Use English for:
+- navigation
+- section names
+- visual headlines
+- buttons and CTAs
+- status labels
+- metadata, tags, and microcopy
+
+Keep Chinese for:
+- personal introduction
+- research explanations
+- project descriptions
+- notes and reflections
+- long-form writing
+- content where Chinese is the natural authoring language
+
+Chinese should usually not carry the largest typographic layer. Large display type should prefer English; Chinese lives mainly in readable body copy or small handwritten accents.
+
+Authenticated, operational surfaces such as Admin may remain Chinese-first where that improves usability.
+
 ## Source design skills
 
 Direction is informed by the public `bergside/awesome-design-skills` registry:
@@ -40,7 +64,7 @@ Prefer:
 - personal photos
 - small status lists
 - imperfect alignment used deliberately
-- small English labels beside Chinese content
+- English interface labels around Chinese-authored content
 
 Avoid:
 - corporate hero statements
@@ -80,11 +104,11 @@ No default “tech blue”. Strong saturated colors should be rare and image-led
 
 ### 4. Typography
 
-Chinese expressive text may use local handwriting / Kai-style fallbacks:
+Large public display typography should prefer English sans / grotesque forms.
+
+Chinese body text uses readable system sans-serif. Chinese handwritten accents may use local handwriting / Kai-style fallbacks:
 
 `STKaiti`, `KaiTi`, `Segoe Print`, cursive
-
-UI/body text stays readable system sans-serif.
 
 Tiny labels/status/tags use monospace.
 
@@ -162,7 +186,7 @@ Do **not** redesign this site into:
 
 Public homepage:
 
-`personal rail + dominant visual + handwritten intro + current-doing note + research/projects/photos/music shelf + dark notebook strip + private portal entrance`
+`personal rail + dominant visual + English visual shell + Chinese personal content + current-doing note + research/projects/photos/music shelf + dark notebook strip + private portal entrance`
 
 Private portal:
 
