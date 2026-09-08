@@ -5,6 +5,10 @@ import { requireOwner } from '@/lib/access'
 import { createClient } from '@/lib/supabase/server'
 
 const VISIBILITIES = ['public', 'member', 'selected', 'owner'] as const
+const ALLOWED_MIME = new Set([
+  'image/jpeg','image/png','image/webp','image/gif','image/avif','image/heic','image/heif',
+  'audio/mpeg','audio/mp4','audio/ogg','audio/wav','audio/x-wav','audio/flac',
+])
 
 function value(formData: FormData, key: string, required = false) {
   const result = String(formData.get(key) ?? '').trim()
@@ -19,7 +23,7 @@ function visibility(formData: FormData) {
 }
 
 function safeStoragePath(path: string) {
-  return path.length <= 240 && !path.includes('..') && /^[a-zA-Z0-9/_ .-]+$/.test(path)
+  return /^\d{4}-\d{2}-\d{2}\/[0-9a-f-]{36}\.[a-z0-9]{1,8}$/i.test(path)
 }
 
 export async function registerUploadedMedia(formData: FormData) {
@@ -29,17 +33,28 @@ export async function registerUploadedMedia(formData: FormData) {
   if (!safeStoragePath(storagePath)) throw new Error('INVALID_STORAGE_PATH')
 
   const byteSize = Number(value(formData, 'byte_size') || '0')
-  if (!Number.isFinite(byteSize) || byteSize < 0 || byteSize > 20 * 1024 * 1024) throw new Error('INVALID_FILE_SIZE')
+  if (!Number.isFinite(byteSize) || byteSize <= 0 || byteSize > 20 * 1024 * 1024) throw new Error('INVALID_FILE_SIZE')
+
+  const mimeType = value(formData, 'mime_type', true)
+  if (!ALLOWED_MIME.has(mimeType)) throw new Error('INVALID_MEDIA_TYPE')
+  const nextVisibility = visibility(formData)
+  const altText = value(formData, 'alt_text')
+  if (nextVisibility === 'public' && mimeType.startsWith('image/') && !altText) throw new Error('PUBLIC_IMAGE_ALT_REQUIRED')
+
+  const [folder, fileName] = storagePath.split('/')
+  const { data: stored, error: listError } = await supabase.storage.from('site-media').list(folder, { search: fileName, limit: 10 })
+  if (listError) throw listError
+  if (!(stored ?? []).some((entry) => entry.name === fileName)) throw new Error('STORAGE_OBJECT_NOT_FOUND')
 
   const { error } = await supabase.from('media_assets').insert({
     storage_path: storagePath,
     file_name: value(formData, 'file_name', true),
-    mime_type: value(formData, 'mime_type') || null,
-    byte_size: byteSize || null,
+    mime_type: mimeType,
+    byte_size: byteSize,
     title: value(formData, 'title') || value(formData, 'file_name', true),
-    alt_text: value(formData, 'alt_text') || null,
+    alt_text: altText || null,
     caption: value(formData, 'caption') || null,
-    visibility: visibility(formData),
+    visibility: nextVisibility,
     created_by: String(claims!.sub),
   })
   if (error) throw error
@@ -54,13 +69,14 @@ export async function setHomepageHeroMedia(formData: FormData) {
   const id = value(formData, 'id', true)
   const { data: media, error: mediaError } = await supabase
     .from('media_assets')
-    .select('id,mime_type,visibility')
+    .select('id,mime_type,visibility,alt_text')
     .eq('id', id)
     .maybeSingle()
   if (mediaError) throw mediaError
   if (!media) throw new Error('MEDIA_NOT_FOUND')
   if (!media.mime_type?.startsWith('image/')) throw new Error('HERO_MUST_BE_IMAGE')
   if (media.visibility !== 'public') throw new Error('HERO_MUST_BE_PUBLIC')
+  if (!media.alt_text?.trim()) throw new Error('HERO_ALT_REQUIRED')
 
   const { error } = await supabase.from('site_settings').upsert({
     key: 'hero_media_id',
