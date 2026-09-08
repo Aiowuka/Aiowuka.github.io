@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import MarkdownContent from '@/components/markdown-content'
 import { createClient } from '@/lib/supabase/server'
 import { currentProfile } from '@/lib/access'
 
@@ -32,7 +33,7 @@ export default async function ContentPage({ params }: { params: Promise<{ slug:s
         <h1>{item.title}</h1>
         {item.summary && <p className="article-summary">{item.summary}</p>}
         <div className="article-rule" />
-        <div className="article-body">{item.body_markdown}</div>
+        <MarkdownContent className="article-body markdown-content" children={item.body_markdown} />
       </article>
 
       <footer className="article-footer">
