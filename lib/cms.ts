@@ -52,6 +52,18 @@ export type ContentItem = {
   created_at: string
 }
 
+export type MediaAsset = {
+  id: string
+  storage_path: string
+  file_name: string
+  mime_type: string | null
+  title: string | null
+  alt_text: string | null
+  caption: string | null
+  visibility: 'public' | 'member' | 'selected' | 'owner'
+  url: string
+}
+
 export async function getNavigation(): Promise<NavItem[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -131,6 +143,43 @@ export async function getPagesBySlugs(slugs: string[]): Promise<CmsPage[]> {
     .order('sort_order')
   if (error) return []
   return (data ?? []) as CmsPage[]
+}
+
+export async function getMediaAsset(id: string | null | undefined, expiresIn = 60 * 60): Promise<MediaAsset | null> {
+  if (!id) return null
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('media_assets')
+    .select('id,storage_path,file_name,mime_type,title,alt_text,caption,visibility')
+    .eq('id', id)
+    .maybeSingle()
+  if (error || !data) return null
+
+  const signed = await supabase.storage.from('site-media').createSignedUrl(data.storage_path, expiresIn)
+  if (signed.error || !signed.data?.signedUrl) return null
+  return { ...data, url: signed.data.signedUrl } as MediaAsset
+}
+
+export async function getMediaAssets(ids: Array<string | null | undefined>, expiresIn = 60 * 60) {
+  const uniqueIds = [...new Set(ids.filter((id): id is string => Boolean(id)))]
+  if (!uniqueIds.length) return new Map<string, MediaAsset>()
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('media_assets')
+    .select('id,storage_path,file_name,mime_type,title,alt_text,caption,visibility')
+    .in('id', uniqueIds)
+  if (error || !data?.length) return new Map<string, MediaAsset>()
+
+  const signed = await supabase.storage.from('site-media').createSignedUrls(data.map((item) => item.storage_path), expiresIn)
+  if (signed.error) return new Map<string, MediaAsset>()
+
+  const result = new Map<string, MediaAsset>()
+  data.forEach((item, index) => {
+    const url = signed.data?.[index]?.signedUrl
+    if (url) result.set(item.id, { ...item, url } as MediaAsset)
+  })
+  return result
 }
 
 export function settingText(settings: Record<string, unknown>, key: string, fallback: string) {
