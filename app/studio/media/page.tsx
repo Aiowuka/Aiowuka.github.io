@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { saveMediaMetadata, uploadMedia } from '../actions'
+import { saveMediaMetadata } from '../actions'
+import { deleteMedia } from './actions'
+import MediaUploader from './media-uploader'
 
 const visibilityOptions = ['public', 'member', 'selected', 'owner']
 
@@ -16,20 +18,11 @@ export default async function StudioMedia() {
 
   return (
     <>
-      <header className="studio-header"><p className="micro-label">ASSETS</p><h1>Media</h1><p>真实照片、封面和以后需要的音频素材从这里上传。Storage 是私有桶，访问仍受 RLS 控制。</p></header>
+      <header className="studio-header"><p className="micro-label">ASSETS</p><h1>Media</h1><p>真实照片、封面和音频素材从这里上传。文件直接进入 Supabase Storage，内容权限仍由数据库控制。</p></header>
 
       <section className="studio-section">
         <div className="studio-section-head"><div><p className="micro-label">UPLOAD</p><h2>Add media</h2></div></div>
-        <form action={uploadMedia} className="studio-form studio-paper" encType="multipart/form-data">
-          <label>File<input type="file" name="file" accept="image/*,audio/*" required /></label>
-          <div className="studio-form-grid">
-            <label>Title<input name="title" /></label>
-            <label>Alt text<input name="alt_text" /></label>
-            <label>Visibility<select name="visibility" defaultValue="owner">{visibilityOptions.map((v) => <option key={v}>{v}</option>)}</select></label>
-          </div>
-          <label>Caption<textarea name="caption" rows={3} /></label>
-          <button className="studio-primary" type="submit">Upload</button>
-        </form>
+        <MediaUploader />
       </section>
 
       <section className="studio-section">
@@ -51,6 +44,14 @@ export default async function StudioMedia() {
                   <label>Visibility<select name="visibility" defaultValue={item.visibility}>{visibilityOptions.map((v) => <option key={v}>{v}</option>)}</select></label>
                   <button type="submit">Save</button>
                 </form>
+                <details className="studio-danger-zone">
+                  <summary>Delete file…</summary>
+                  <form action={deleteMedia}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <p>This removes the database record and the Storage object.</p>
+                    <button type="submit">Delete permanently</button>
+                  </form>
+                </details>
               </article>
             )
           })}
