@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import MarkdownContent from '@/components/markdown-content'
 import { PublicFrame } from '@/components/public-frame'
 import { getCollectionItems, getMediaAssets, getNavigation, getPageBlocks, getPageBySlug } from '@/lib/cms'
 
@@ -19,7 +20,7 @@ function renderBlock(block: Awaited<ReturnType<typeof getPageBlocks>>[number]) {
     <section className="cms-block" key={block.id}>
       {block.label ? <p className="micro-label">{block.label}</p> : null}
       {block.title ? <h2>{block.title}</h2> : null}
-      <div className="cms-prose">{block.body_markdown}</div>
+      <MarkdownContent className="cms-prose markdown-content" children={block.body_markdown} />
     </section>
   )
 }
