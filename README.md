@@ -1,11 +1,17 @@
 # AIowuka.github.io
 
-Personal website for **AIowuka**, published with GitHub Pages and served from `aiowuka.me`.
+Personal website source for **AIowuka**, deployed on Vercel and served from `aiowuka.me`.
 
 ## Structure
 
 - `index.html` — current landing page
-- `CNAME` — custom domain configuration for `aiowuka.me`
+- `CNAME` — legacy GitHub Pages custom-domain file; keep temporarily during DNS migration and remove after Vercel domain verification
+
+## Deployment
+
+- Source: GitHub (`main`)
+- Hosting: Vercel
+- Custom domain: `aiowuka.me`
 
 ## Roadmap
 
