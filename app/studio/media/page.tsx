@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { saveMediaMetadata } from '../actions'
 import { deleteMedia } from './actions'
 import MediaUploader from './media-uploader'
+import './media.css'
 
 const visibilityOptions = ['public', 'member', 'selected', 'owner']
 
