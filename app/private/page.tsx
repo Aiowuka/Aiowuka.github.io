@@ -25,15 +25,15 @@ export default async function PrivatePage() {
       <header className="portal-header">
         <Link className="portal-wordmark" href="/">Aiowuka</Link>
         <div className="portal-actions">
-          {isOwner && <Link href="/admin">管理后台 ↗</Link>}
-          <Link href="/">返回主页</Link>
-          <form action="/auth/signout" method="post"><button className="text-button">退出登录</button></form>
+          {isOwner && <Link href="/studio">Studio ↗</Link>}
+          <Link href="/">Home</Link>
+          <form action="/auth/signout" method="post"><button className="text-button">Sign out</button></form>
         </div>
       </header>
 
       <section className="portal-intro">
         <div>
-          <span className="micro-label">PRIVATE ROOM / 私人空间</span>
+          <span className="micro-label">PRIVATE ROOM</span>
           <h1>欢迎回来，<br/>{name}。</h1>
         </div>
         <p className="portal-handnote">有些东西，<br/>适合小范围地分享。</p>
@@ -51,7 +51,7 @@ export default async function PrivatePage() {
         <section className="private-library">
           <div className="library-label">
             <span>FOR YOU</span>
-            <p>{isOwner ? '作为 OWNER，你可以看到所有受保护内容。' : '这里只显示你当前有权限阅读的内容。'}</p>
+            <p>{isOwner ? '作为 OWNER，你可以看到所有受保护内容，并从 Studio 修改整个网站。' : '这里只显示你当前有权限阅读的内容。'}</p>
           </div>
 
           <div className="library-list">
