@@ -43,14 +43,16 @@ jobs:
     timeout-minutes: 12
     env:
       GH_TOKEN: ${{ github.token }}
+      DEPLOY_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       PREVIEW_URL: https://aiowuka-git-feat-access-control-v1-aiowoka.vercel.app
     steps:
       - name: Wait for this commit on Vercel
         shell: bash
         run: |
           set -euo pipefail
+          echo "Waiting for Vercel status on ${DEPLOY_SHA}"
           for attempt in $(seq 1 48); do
-            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/status" --jq '[.statuses[] | select(.context == "Vercel")][0].state // "pending"')
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${DEPLOY_SHA}/status" --jq '[.statuses[] | select(.context == "Vercel")][0].state // "pending"')
             echo "Vercel status: ${state} (attempt ${attempt}/48)"
             if [ "$state" = "success" ]; then
               exit 0
