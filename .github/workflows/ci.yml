@@ -69,18 +69,42 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          assert_contains() {
+            local file="$1"
+            local marker="$2"
+            local path="$3"
+            if ! grep -qi -- "$marker" "$file"; then
+              echo "Expected marker not found for ${path}: ${marker}"
+              echo "--- response preview ---"
+              head -c 1200 "$file" || true
+              echo
+              echo "--- end response preview ---"
+              exit 1
+            fi
+          }
+
           paths=("/" "/notes" "/about" "/robots.txt" "/sitemap.xml" "/feed.xml")
           for path in "${paths[@]}"; do
             body=$(mktemp)
-            code=$(curl --retry 3 --retry-delay 2 --connect-timeout 10 --max-time 30 -sS -L -o "$body" -w '%{http_code}' "${PREVIEW_URL}${path}")
-            echo "${path} -> ${code}"
+            headers=$(mktemp)
+            code=$(curl --retry 3 --retry-delay 2 --connect-timeout 10 --max-time 30 -sS -L -D "$headers" -o "$body" -w '%{http_code}' "${PREVIEW_URL}${path}")
+            content_type=$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{sub(/\r$/, "", $2); print $2; exit}' "$headers")
+            echo "${path} -> ${code} (${content_type:-unknown})"
             if [[ ! "$code" =~ ^2 ]]; then
-              cat "$body"
+              cat "$headers"
+              head -c 1200 "$body" || true
               exit 1
             fi
-            if [ "$path" = "/" ]; then grep -qi 'AIowuka' "$body"; fi
-            if [ "$path" = "/sitemap.xml" ]; then grep -qi 'aiowuka.me' "$body"; fi
-            if [ "$path" = "/feed.xml" ]; then grep -qi '<rss' "$body"; fi
+
+            case "$path" in
+              "/") assert_contains "$body" 'AIowuka' "$path" ;;
+              "/notes") assert_contains "$body" 'Notes' "$path" ;;
+              "/about") assert_contains "$body" 'About' "$path" ;;
+              "/robots.txt") assert_contains "$body" 'User-agent' "$path" ;;
+              "/sitemap.xml") assert_contains "$body" '<urlset' "$path" ;;
+              "/feed.xml") assert_contains "$body" '<rss' "$path" ;;
+            esac
           done
 
       - name: Smoke protected routes
