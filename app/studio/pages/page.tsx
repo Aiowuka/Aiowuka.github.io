@@ -81,11 +81,12 @@ export default async function StudioPages() {
 
       {(pages ?? []).map((page) => {
         const href = page.slug === 'home' ? '/' : `/${page.slug}`
+        const previewHref = page.slug === 'home' ? '/' : `${href}?preview=1`
         return (
           <section className="studio-section" key={page.id}>
             <div className="studio-section-head">
               <div><p className="micro-label">{href}</p><h2>{page.title}</h2></div>
-              <div className="studio-head-actions"><span className="studio-status">{page.visibility} · {page.published ? 'live' : 'draft'}</span><Link href={href}>Preview ↗</Link></div>
+              <div className="studio-head-actions"><span className="studio-status">{page.visibility} · {page.published ? 'live' : 'draft'}</span><Link href={previewHref}>{page.slug === 'home' ? 'Open homepage ↗' : 'Preview page ↗'}</Link></div>
             </div>
             <PageForm page={page} />
             {page.slug !== 'home' ? (
@@ -99,7 +100,7 @@ export default async function StudioPages() {
               </details>
             ) : null}
             <div className="studio-subsection">
-              <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div><Link href={href}>Open page →</Link></div>
+              <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div><Link href={previewHref}>{page.slug === 'home' ? 'Open page →' : 'Preview with drafts →'}</Link></div>
               {(blocks ?? []).filter((b) => b.page_id === page.id).map((block) => <BlockForm block={block} pageId={page.id} key={block.id} />)}
               <details className="studio-add-details"><summary>+ Add block</summary><BlockForm pageId={page.id} /></details>
             </div>
