@@ -99,25 +99,32 @@ export async function getPageBySlug(slug: string): Promise<CmsPage | null> {
   return data as CmsPage | null
 }
 
-export async function getPageBlocks(pageId: string): Promise<PageBlock[]> {
+export async function getPageBlocks(
+  pageId: string,
+  options: { includeDrafts?: boolean } = {},
+): Promise<PageBlock[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('page_blocks')
     .select('id,page_id,block_key,kind,label,title,body_markdown,data,visibility,published,sort_order')
     .eq('page_id', pageId)
-    .eq('published', true)
-    .order('sort_order')
+  if (!options.includeDrafts) query = query.eq('published', true)
+  const { data, error } = await query.order('sort_order')
   if (error) return []
   return (data ?? []) as PageBlock[]
 }
 
-export async function getCollectionItems(contentType: string): Promise<ContentItem[]> {
+export async function getCollectionItems(
+  contentType: string,
+  options: { includeDrafts?: boolean } = {},
+): Promise<ContentItem[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('content_items')
     .select(CONTENT_SELECT)
     .eq('content_type', contentType)
-    .eq('published', true)
+  if (!options.includeDrafts) query = query.eq('published', true)
+  const { data, error } = await query
     .order('featured', { ascending: false })
     .order('sort_order')
     .order('published_at', { ascending: false, nullsFirst: false })
