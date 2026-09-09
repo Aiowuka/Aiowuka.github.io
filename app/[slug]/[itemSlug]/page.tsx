@@ -31,7 +31,7 @@ async function ownerPreviewRequested(searchParams?: Promise<ArticleSearch>) {
 export async function generateMetadata({ params, searchParams }: ArticleProps): Promise<Metadata> {
   const { slug, itemSlug } = await params
   const preview = await ownerPreviewRequested(searchParams)
-  const page = await getPageBySlug(slug)
+  const page = await getPageBySlug(slug, { includeDrafts: preview })
   if (!page?.collection_type) return { robots: { index: false, follow: false } }
   const item = await getContentItem(page.collection_type, itemSlug, { includeDrafts: preview })
   if (!item) return { robots: { index: false, follow: false } }
@@ -61,7 +61,7 @@ export async function generateMetadata({ params, searchParams }: ArticleProps): 
 export default async function ContentDetailPage({ params, searchParams }: ArticleProps) {
   const { slug, itemSlug } = await params
   const preview = await ownerPreviewRequested(searchParams)
-  const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug)])
+  const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug, { includeDrafts: preview })])
   if (!page?.collection_type) notFound()
 
   const item = await getContentItem(page.collection_type, itemSlug, { includeDrafts: preview })
