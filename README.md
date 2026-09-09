@@ -1,18 +1,22 @@
-# AIowuka.github.io
+# AIowuka personal site
 
 Personal website source for **AIowuka**, deployed on Vercel and served from `aiowuka.me`.
 
-## Structure
+## Stack
 
-- `index.html` — current landing page
+- Next.js 16 App Router
+- Vercel
+- Supabase Auth + Postgres + RLS
 
-## Deployment
+## Access model
 
-- Source: GitHub (`main`)
-- Hosting: Vercel
-- Custom domain: `aiowuka.me`
-- `www.aiowuka.me` is the current canonical host; the apex domain redirects to it
+- `PUBLIC` — anyone
+- `MEMBER` — authenticated and owner-approved members
+- `SELECTED` — approved members explicitly granted access to an item
+- `OWNER` — site owner only
 
-## Roadmap
+Authentication alone does **not** grant member access. Database RLS is the authorization boundary.
 
-This repository will evolve into a personal hub for research, engineering projects, notes, and selected public work.
+## Environment
+
+Copy `.env.example` to `.env.local` and configure the Supabase project URL and publishable key. Never commit secret/service-role keys.

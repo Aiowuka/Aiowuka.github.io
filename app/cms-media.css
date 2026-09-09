@@ -1,0 +1,91 @@
+.hero-photo.has-real-media{
+  background:#2b2b27;
+}
+.hero-photo.has-real-media:before{
+  z-index:2;
+  background:linear-gradient(180deg,rgba(18,18,16,.08),rgba(18,18,16,.04) 45%,rgba(18,18,16,.5));
+  mix-blend-mode:normal;
+}
+.hero-photo.has-real-media:after{
+  display:none;
+}
+.hero-photo-image{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:1;
+}
+.hero-photo.has-real-media .photo-handwriting,
+.hero-photo.has-real-media .photo-caption{
+  z-index:4;
+}
+.hero-photo.has-real-media .photo-handwriting{
+  color:#f7f1e6;
+  text-shadow:0 1px 16px rgba(0,0,0,.45);
+}
+
+.collection-row.has-cover{
+  grid-template-columns:52px minmax(120px,210px) minmax(0,1fr) 30px;
+  align-items:center;
+}
+.collection-cover{
+  position:relative;
+  width:100%;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  background:var(--paper-2,#ebe4d8);
+}
+.collection-cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .25s ease;
+}
+.collection-row:hover .collection-cover img{transform:scale(1.015)}
+
+.article-cover{
+  margin:32px 0 42px;
+}
+.article-cover img{
+  display:block;
+  width:100%;
+  max-height:680px;
+  object-fit:cover;
+}
+.article-cover figcaption{
+  margin-top:8px;
+  color:var(--muted,#8b8479);
+  font-size:12px;
+  line-height:1.6;
+}
+
+.studio-hero-control{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+}
+.studio-hero-control p{margin:0;max-width:760px;line-height:1.7}
+.studio-media-card.is-hero{outline:1px solid var(--ink,#181815);outline-offset:3px}
+.studio-media-preview{position:relative}
+.studio-media-hero-badge{
+  position:absolute;
+  left:10px;
+  top:10px;
+  padding:5px 7px;
+  background:rgba(24,24,21,.9);
+  color:#f7f2e8;
+  font:9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.12em;
+}
+.studio-media-action{margin-top:10px}
+.studio-media-action button{width:100%}
+.studio-media-hint{margin:10px 0 0;color:var(--muted,#8b8479);font-size:11px;line-height:1.55}
+
+@media(max-width:760px){
+  .collection-row.has-cover{grid-template-columns:34px 96px minmax(0,1fr) 20px;gap:12px}
+  .studio-hero-control{align-items:flex-start;flex-direction:column}
+}

@@ -1,0 +1,24 @@
+.hero-label{
+  margin:0 0 12px;
+  color:var(--muted);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:9px;
+  letter-spacing:.18em;
+}
+
+.english-hero{
+  margin:0 0 28px;
+  font-family:"Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  font-size:clamp(38px,4vw,62px);
+  line-height:.93;
+  letter-spacing:-.055em;
+  font-weight:700;
+}
+
+.shelf-heading h2{
+  letter-spacing:-.035em;
+}
+
+@media(max-width:720px){
+  .english-hero{font-size:clamp(42px,12vw,64px)}
+}

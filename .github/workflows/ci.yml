@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/access-control-v1]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  statuses: read
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://msorfdgkpzfqmflemjfb.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_AG84WQk_vSDsuVJjnB8qWg_eRIMJbXD
+      NEXT_PUBLIC_SITE_URL: https://aiowuka.me
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Start app
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm start -- -p 3000 > /tmp/aiowuka-next.log 2>&1 &
+          echo $! > /tmp/aiowuka-next.pid
+          for attempt in $(seq 1 30); do
+            if curl --connect-timeout 2 --max-time 5 -fsS http://127.0.0.1:3000/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/aiowuka-next.log
+          exit 1
+
+      - name: Smoke public routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=http://127.0.0.1:3000
+
+          assert_contains() {
+            local file="$1"
+            local marker="$2"
+            local path="$3"
+            if ! grep -qi -- "$marker" "$file"; then
+              echo "Expected marker not found for ${path}: ${marker}"
+              echo "--- response preview ---"
+              head -c 1600 "$file" || true
+              echo
+              echo "--- server log ---"
+              tail -n 120 /tmp/aiowuka-next.log || true
+              exit 1
+            fi
+          }
+
+          paths=("/" "/notes" "/about" "/robots.txt" "/sitemap.xml" "/feed.xml")
+          for path in "${paths[@]}"; do
+            body=$(mktemp)
+            headers=$(mktemp)
+            code=$(curl --connect-timeout 10 --max-time 30 -sS -L -D "$headers" -o "$body" -w '%{http_code}' "${BASE}${path}")
+            content_type=$(awk 'BEGIN{IGNORECASE=1} /^content-type:/{sub(/\r$/, "", $2); print $2; exit}' "$headers")
+            echo "${path} -> ${code} (${content_type:-unknown})"
+            if [[ ! "$code" =~ ^2 ]]; then
+              cat "$headers"
+              head -c 1600 "$body" || true
+              tail -n 120 /tmp/aiowuka-next.log || true
+              exit 1
+            fi
+
+            case "$path" in
+              "/") assert_contains "$body" 'AIowuka' "$path" ;;
+              "/notes") assert_contains "$body" 'Notes' "$path" ;;
+              "/about") assert_contains "$body" 'About' "$path" ;;
+              "/robots.txt") assert_contains "$body" 'User-agent' "$path" ;;
+              "/sitemap.xml") assert_contains "$body" '<urlset' "$path" ;;
+              "/feed.xml") assert_contains "$body" '<rss' "$path" ;;
+            esac
+          done
+
+      - name: Smoke protected routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=http://127.0.0.1:3000
+          for path in /studio /private; do
+            headers=$(mktemp)
+            code=$(curl --connect-timeout 10 --max-time 30 -sS -D "$headers" -o /dev/null -w '%{http_code}' "${BASE}${path}")
+            location=$(awk 'BEGIN{IGNORECASE=1} /^location:/{sub(/\r$/, "", $2); print $2; exit}' "$headers")
+            echo "${path} -> ${code} ${location}"
+            if [[ ! "$code" =~ ^(302|303|307|308)$ ]] || [[ "$location" != *"/login"* ]]; then
+              cat "$headers"
+              tail -n 120 /tmp/aiowuka-next.log || true
+              exit 1
+            fi
+          done
+
+      - name: Stop app
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/aiowuka-next.pid ]; then kill "$(cat /tmp/aiowuka-next.pid)" 2>/dev/null || true; fi
+
+  vercel-deployment:
+    needs: build-and-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEPLOY_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Wait for this commit on Vercel
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Waiting for Vercel status on ${DEPLOY_SHA}"
+          for attempt in $(seq 1 48); do
+            state=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${DEPLOY_SHA}/status" --jq '[.statuses[] | select(.context == "Vercel")][0].state // "pending"')
+            echo "Vercel status: ${state} (attempt ${attempt}/48)"
+            if [ "$state" = "success" ]; then
+              exit 0
+            fi
+            if [ "$state" = "failure" ] || [ "$state" = "error" ]; then
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for Vercel"
+          exit 1

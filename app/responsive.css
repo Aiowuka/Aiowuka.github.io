@@ -1,0 +1,83 @@
+@media(max-width:900px){
+  .journal-shell{display:block;width:100%;border-left:0;border-right:0}
+  .personal-rail{position:relative;top:auto;height:auto;min-height:0;padding:22px 24px 18px;border-right:0;border-bottom:1px solid var(--line)}
+  .personal-rail>div:first-child{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}
+  .scribble-mark{font-size:31px}
+  .rail-mantra{margin:0 4px 3px 0;font-size:11px;transform:rotate(-2deg);text-align:right}
+  .rail-nav{display:flex;gap:6px;margin-top:22px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .rail-nav::-webkit-scrollbar{display:none}
+  .rail-nav a{flex:0 0 auto;min-height:34px;padding:0 11px;border:1px solid transparent}
+  .rail-nav a.active{border-color:rgba(217,105,69,.26)}
+  .rail-note,.rail-bottom{display:none}
+  .journal-topbar{height:52px;padding:0 22px}
+  .hero-desk{grid-template-columns:minmax(0,1.15fr) minmax(250px,.85fr);min-height:0}
+  .hero-photo{min-height:410px}
+  .hero-copy{border-right:0;padding:38px 32px}
+  .doing-note{grid-column:1/-1;margin:24px;max-width:520px}
+  .shelf-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .shelf-card:nth-child(2){border-right:0}
+  .shelf-card:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .notes-board{grid-template-columns:minmax(0,1fr) 220px}
+}
+
+@media(max-width:620px){
+  body:before{opacity:.14}
+  .personal-rail{padding:18px 18px 14px}
+  .personal-rail>div:first-child{align-items:flex-start}
+  .scribble-mark{font-size:29px}
+  .rail-mantra{display:none}
+  .rail-nav{margin-top:16px}
+  .rail-nav a{font-size:11px;min-height:32px;padding:0 10px}
+  .journal-topbar{height:48px;padding:0 18px;font-size:8px}
+  .journal-topbar>span{max-width:65%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hero-desk{display:block}
+  .hero-photo{min-height:330px;border-right:0;border-bottom:1px solid var(--line)}
+  .photo-handwriting{top:38px;left:28px;font-size:15px}
+  .photo-caption{left:20px;bottom:20px;font-size:9px}
+  .hero-copy{padding:32px 24px 30px;border-bottom:1px solid var(--line)}
+  .english-hero{font-size:clamp(44px,14vw,68px)!important}
+  .about-copy{font-size:12px}
+  .doing-note{margin:22px 18px 28px;padding:22px 20px;transform:rotate(-1deg)}
+  .shelf-grid{grid-template-columns:1fr}
+  .shelf-card,.shelf-card:nth-child(2){border-right:0;border-bottom:1px solid var(--line)}
+  .shelf-card:last-child{border-bottom:0}
+  .shelf-visual{height:178px}
+  .shelf-card>p{min-height:0}
+  .notes-board{grid-template-columns:1fr}
+  .paper-strip{min-height:116px;padding:24px}
+  .planet-note{min-height:110px;border-left:0;border-top:1px solid rgba(255,255,255,.12)}
+  .portal-corner{grid-template-columns:1fr!important;gap:18px;padding:28px 24px!important}
+  .portal-corner>a{justify-self:start!important}
+  .cms-page-head{padding:44px 20px 36px}
+  .cms-page-head h1{font-size:clamp(46px,15vw,72px);overflow-wrap:anywhere}
+  .collection-list{overflow:hidden}
+  .collection-row,.collection-row.has-cover{grid-template-columns:32px minmax(0,1fr) 20px;gap:12px;padding:20px}
+  .collection-row.has-cover .collection-cover{grid-column:2/4;width:100%;max-height:220px;margin-bottom:4px}
+  .collection-row.has-cover .collection-copy{grid-column:2/3}
+  .collection-heading h2{font-size:24px}
+  .collection-arrow{grid-column:3;align-self:end}
+  .cms-blocks{padding:10px 20px 50px}
+  .cms-block{padding:26px 0}
+  .cms-article{padding:40px 20px 72px;max-width:100%}
+  .cms-article h1{font-size:clamp(42px,13vw,64px);overflow-wrap:anywhere}
+  .article-lead{font-size:15px;margin-bottom:30px}
+  .article-cover{margin:26px -20px 34px}
+  .article-cover figcaption{padding:0 20px}
+  .markdown-content pre{max-width:100%;overflow-x:auto}
+  .article-meta{flex-wrap:wrap;margin-top:38px}
+  .article-tags{gap:6px}
+  .portal-header{padding-left:18px!important;padding-right:18px!important;gap:14px}
+  .portal-actions{gap:10px!important;flex-wrap:wrap;justify-content:flex-end}
+  .portal-intro,.private-library{padding-left:20px!important;padding-right:20px!important}
+  .library-item{grid-template-columns:30px minmax(0,1fr) 18px!important;gap:10px!important}
+  .private-article{padding-left:18px!important;padding-right:18px!important}
+}
+
+@media(max-width:390px){
+  .journal-topbar>span{display:none}
+  .journal-topbar{justify-content:flex-end}
+  .rail-nav a{font-size:10px}
+  .hero-photo{min-height:300px}
+  .shelf-visual{height:155px}
+  .collection-row,.collection-row.has-cover{padding-left:14px;padding-right:14px}
+}
