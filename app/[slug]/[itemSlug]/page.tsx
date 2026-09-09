@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import MarkdownContent from '@/components/markdown-content'
 import { PublicFrame } from '@/components/public-frame'
+import { currentProfile } from '@/lib/access'
 import { getContentItem, getMediaAsset, getNavigation, getPageBySlug } from '@/lib/cms'
 
 function formatDate(value: string | null | undefined) {
@@ -10,13 +11,29 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
 }
 
-type ArticleProps = { params: Promise<{ slug: string; itemSlug: string }> }
+type ArticleSearch = { preview?: string | string[] }
+type ArticleProps = {
+  params: Promise<{ slug: string; itemSlug: string }>
+  searchParams?: Promise<ArticleSearch>
+}
 
-export async function generateMetadata({ params }: ArticleProps): Promise<Metadata> {
+function first(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+async function ownerPreviewRequested(searchParams?: Promise<ArticleSearch>) {
+  const search = searchParams ? await searchParams : undefined
+  if (first(search?.preview) !== '1') return false
+  const { profile } = await currentProfile()
+  return profile?.role === 'owner'
+}
+
+export async function generateMetadata({ params, searchParams }: ArticleProps): Promise<Metadata> {
   const { slug, itemSlug } = await params
+  const preview = await ownerPreviewRequested(searchParams)
   const page = await getPageBySlug(slug)
   if (!page?.collection_type) return { robots: { index: false, follow: false } }
-  const item = await getContentItem(page.collection_type, itemSlug)
+  const item = await getContentItem(page.collection_type, itemSlug, { includeDrafts: preview })
   if (!item) return { robots: { index: false, follow: false } }
 
   const description = item.summary || `${item.title} — AIowuka`
@@ -26,6 +43,7 @@ export async function generateMetadata({ params }: ArticleProps): Promise<Metada
     description,
     keywords: item.tags,
     alternates: { canonical },
+    robots: preview ? { index: false, follow: false, noarchive: true, nocache: true } : undefined,
     openGraph: {
       title: item.title,
       description,
@@ -40,12 +58,13 @@ export async function generateMetadata({ params }: ArticleProps): Promise<Metada
   }
 }
 
-export default async function ContentDetailPage({ params }: ArticleProps) {
+export default async function ContentDetailPage({ params, searchParams }: ArticleProps) {
   const { slug, itemSlug } = await params
+  const preview = await ownerPreviewRequested(searchParams)
   const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug)])
   if (!page?.collection_type) notFound()
 
-  const item = await getContentItem(page.collection_type, itemSlug)
+  const item = await getContentItem(page.collection_type, itemSlug, { includeDrafts: preview })
   if (!item) notFound()
   const cover = await getMediaAsset(item.cover_media_id)
   const published = formatDate(item.published_at || item.created_at)
@@ -53,12 +72,19 @@ export default async function ContentDetailPage({ params }: ArticleProps) {
 
   return (
     <PublicFrame navigation={navigation} activeHref={`/${slug}`}>
+      {preview ? (
+        <div className="draft-preview-banner">
+          <span>OWNER PREVIEW · {item.published ? 'PUBLISHED' : 'DRAFT'}</span>
+          <Link href="/studio/content">Back to Studio →</Link>
+        </div>
+      ) : null}
       <article className="cms-article">
         <Link className="article-back" href={`/${slug}`}>← {page.nav_label || page.title}</Link>
         <div className="article-meta">
           <span>{item.content_type.toUpperCase()}</span>
           {published ? <time dateTime={item.published_at || item.created_at}>{published}</time> : null}
           {item.featured ? <span>FEATURED</span> : null}
+          {!item.published ? <span>DRAFT</span> : null}
         </div>
         <h1>{item.title}</h1>
         {item.summary ? <p className="article-lead">{item.summary}</p> : null}
@@ -71,7 +97,7 @@ export default async function ContentDetailPage({ params }: ArticleProps) {
         ) : null}
         <MarkdownContent className="article-body markdown-content" children={item.body_markdown} />
         <footer className="article-date-footer">
-          <span>Published {published || '—'}</span>
+          <span>Published {item.published ? (published || '—') : 'Not yet'}</span>
           {updated && updated !== published ? <span>Updated {updated}</span> : null}
         </footer>
       </article>
