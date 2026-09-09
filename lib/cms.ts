@@ -67,6 +67,7 @@ export type MediaAsset = {
 }
 
 const CONTENT_SELECT = 'id,slug,title,summary,body_markdown,content_type,visibility,published,featured,tags,metadata,cover_media_id,published_at,updated_at,created_at'
+const PAGE_SELECT = 'id,slug,title,nav_label,summary,template,collection_type,visibility,published,sort_order,show_in_nav'
 
 export async function getNavigation(): Promise<NavItem[]> {
   const supabase = await createClient()
@@ -88,13 +89,17 @@ export async function getSettings(keys?: string[]) {
   return Object.fromEntries((data ?? []).map((row) => [row.key, row.value])) as Record<string, unknown>
 }
 
-export async function getPageBySlug(slug: string): Promise<CmsPage | null> {
+export async function getPageBySlug(
+  slug: string,
+  options: { includeDrafts?: boolean } = {},
+): Promise<CmsPage | null> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('pages')
-    .select('id,slug,title,nav_label,summary,template,collection_type,visibility,published,sort_order,show_in_nav')
+    .select(PAGE_SELECT)
     .eq('slug', slug)
-    .maybeSingle()
+  if (!options.includeDrafts) query = query.eq('published', true)
+  const { data, error } = await query.maybeSingle()
   if (error) return null
   return data as CmsPage | null
 }
@@ -150,13 +155,17 @@ export async function getContentItem(
   return data as ContentItem | null
 }
 
-export async function getPagesBySlugs(slugs: string[]): Promise<CmsPage[]> {
+export async function getPagesBySlugs(
+  slugs: string[],
+  options: { includeDrafts?: boolean } = {},
+): Promise<CmsPage[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('pages')
-    .select('id,slug,title,nav_label,summary,template,collection_type,visibility,published,sort_order,show_in_nav')
+    .select(PAGE_SELECT)
     .in('slug', slugs)
-    .order('sort_order')
+  if (!options.includeDrafts) query = query.eq('published', true)
+  const { data, error } = await query.order('sort_order')
   if (error) return []
   return (data ?? []) as CmsPage[]
 }
