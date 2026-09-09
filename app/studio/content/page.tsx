@@ -106,13 +106,14 @@ export default async function StudioContent({ searchParams }: { searchParams?: P
         {allItems.length > 0 && filtered.length === 0 ? <div className="studio-empty">没有匹配当前筛选条件的内容。清除筛选后可以看到全部。</div> : null}
         {filtered.map((item) => {
           const href = `/${sectionFor(item.content_type)}/${item.slug}`
+          const previewHref = item.published ? href : `${href}?preview=1`
           return (
             <details className="studio-item" key={item.id}>
               <summary>
                 <div><strong>{item.title}</strong><span>/{item.slug} · {item.content_type}{item.tags?.length ? ` · #${item.tags.join(' #')}` : ''}</span></div>
                 <span>{item.visibility} · {item.published ? formatDate(item.published_at) : 'draft'}{item.featured ? ' · featured' : ''}</span>
               </summary>
-              <div className="studio-preview-row"><Link href={href}>Preview article ↗</Link><Link href={`/${sectionFor(item.content_type)}`}>Open collection →</Link></div>
+              <div className="studio-preview-row"><Link href={previewHref}>{item.published ? 'Open article ↗' : 'Preview draft ↗'}</Link><Link href={`/${sectionFor(item.content_type)}`}>Open collection →</Link></div>
               <ContentForm item={item} media={media} />
               <details className="studio-danger-zone">
                 <summary>Delete content…</summary>
