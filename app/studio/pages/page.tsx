@@ -8,21 +8,27 @@ const templateOptions = ['home', 'collection', 'now', 'about', 'standard']
 const collectionOptions = ['', 'research', 'project', 'note', 'photo', 'music']
 
 function PageForm({ page }: { page?: any }) {
+  const isHome = page?.slug === 'home'
   return (
     <form action={savePage} className="studio-form studio-paper">
       {page?.id ? <input type="hidden" name="id" value={page.id} /> : null}
       <div className="studio-form-grid">
-        <label>Slug<input name="slug" defaultValue={page?.slug ?? ''} required placeholder="about" /></label>
+        <label>Slug<input name="slug" defaultValue={page?.slug ?? ''} required placeholder="about" readOnly={isHome} />{isHome ? <span className="studio-field-help">System route. `/` permanently maps to the `home` slug.</span> : null}</label>
         <label>Title<input name="title" defaultValue={page?.title ?? ''} required /></label>
         <label>Nav label<input name="nav_label" defaultValue={page?.nav_label ?? ''} /></label>
-        <label>Template<select name="template" defaultValue={page?.template ?? 'standard'}>{templateOptions.map((v) => <option key={v}>{v}</option>)}</select></label>
+        <label>Template
+          {isHome ? <input type="hidden" name="template" value="home" /> : null}
+          <select name={isHome ? undefined : 'template'} defaultValue={page?.template ?? 'standard'} disabled={isHome}>{templateOptions.map((v) => <option key={v}>{v}</option>)}</select>
+          {isHome ? <span className="studio-field-help">Homepage template is a system invariant.</span> : null}
+        </label>
         <label>Collection<select name="collection_type" defaultValue={page?.collection_type ?? ''}>{collectionOptions.map((v) => <option value={v} key={v || 'none'}>{v || 'None'}</option>)}</select></label>
         <label>Visibility<select name="visibility" defaultValue={page?.visibility ?? 'owner'}>{visibilityOptions.map((v) => <option key={v}>{v}</option>)}</select></label>
         <label>Sort order<input name="sort_order" type="number" defaultValue={page?.sort_order ?? 0} /></label>
       </div>
       <label>Summary<textarea name="summary" rows={3} defaultValue={page?.summary ?? ''} /></label>
       <div className="studio-checks">
-        <label><input type="checkbox" name="published" defaultChecked={page?.published ?? false} /> Published</label>
+        {isHome ? <input type="hidden" name="published" value="on" /> : null}
+        <label><input type="checkbox" name={isHome ? undefined : 'published'} defaultChecked={isHome ? true : (page?.published ?? false)} disabled={isHome} /> Published{isHome ? ' · system locked' : ''}</label>
         <label><input type="checkbox" name="show_in_nav" defaultChecked={page?.show_in_nav ?? true} /> Show in nav</label>
       </div>
       <button className="studio-primary" type="submit">{page ? 'Save page' : 'Create page'}</button>
@@ -80,16 +86,17 @@ export default async function StudioPages() {
       </section>
 
       {(pages ?? []).map((page) => {
-        const href = page.slug === 'home' ? '/' : `/${page.slug}`
-        const previewHref = page.slug === 'home' ? '/' : `${href}?preview=1`
+        const isHome = page.slug === 'home'
+        const href = isHome ? '/' : `/${page.slug}`
+        const previewHref = isHome ? '/?preview=1' : `${href}?preview=1`
         return (
           <section className="studio-section" key={page.id}>
             <div className="studio-section-head">
               <div><p className="micro-label">{href}</p><h2>{page.title}</h2></div>
-              <div className="studio-head-actions"><span className="studio-status">{page.visibility} · {page.published ? 'live' : 'draft'}</span><Link href={previewHref}>{page.slug === 'home' ? 'Open homepage ↗' : 'Preview page ↗'}</Link></div>
+              <div className="studio-head-actions"><span className="studio-status">{isHome ? 'system · ' : ''}{page.visibility} · {page.published ? 'live' : 'draft'}</span><Link href={previewHref}>{isHome ? 'Preview homepage ↗' : 'Preview page ↗'}</Link></div>
             </div>
             <PageForm page={page} />
-            {page.slug !== 'home' ? (
+            {!isHome ? (
               <details className="studio-danger-zone">
                 <summary>Delete page…</summary>
                 <form action={deletePage}>
@@ -100,7 +107,7 @@ export default async function StudioPages() {
               </details>
             ) : null}
             <div className="studio-subsection">
-              <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div><Link href={previewHref}>{page.slug === 'home' ? 'Open page →' : 'Preview with drafts →'}</Link></div>
+              <div className="studio-section-head small"><div><p className="micro-label">BLOCKS</p><h3>Page content</h3></div><Link href={previewHref}>Preview with drafts →</Link></div>
               {(blocks ?? []).filter((b) => b.page_id === page.id).map((block) => <BlockForm block={block} pageId={page.id} key={block.id} />)}
               <details className="studio-add-details"><summary>+ Add block</summary><BlockForm pageId={page.id} /></details>
             </div>
