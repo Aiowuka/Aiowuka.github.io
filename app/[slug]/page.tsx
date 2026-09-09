@@ -53,7 +53,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const { slug } = await params
   if (slug === 'home') return {}
   const preview = await ownerPreviewRequested(searchParams)
-  const page = await getPageBySlug(slug)
+  const page = await getPageBySlug(slug, { includeDrafts: preview })
   if (!page) return { robots: { index: false, follow: false } }
   const title = page.nav_label || page.title
   const description = page.summary || `${title} — AIowuka`
@@ -76,7 +76,7 @@ export default async function CmsPageRoute({ params, searchParams }: PageProps) 
   const selectedTag = first(search?.tag)?.trim() || null
   const preview = await ownerPreviewRequested(Promise.resolve(search ?? {}))
 
-  const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug)])
+  const [navigation, page] = await Promise.all([getNavigation(), getPageBySlug(slug, { includeDrafts: preview })])
   if (!page) notFound()
 
   const [blocks, items] = await Promise.all([
