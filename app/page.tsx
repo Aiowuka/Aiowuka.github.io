@@ -1,5 +1,7 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PublicFrame } from '@/components/public-frame'
+import { currentProfile } from '@/lib/access'
 import {
   getCollectionItems,
   getMediaAsset,
@@ -18,6 +20,31 @@ const shelfUi: Record<string, { tags: string; tone: string }> = {
   music: { tags: '#Playlist   #Listening   #Life', tone: 'music' },
 }
 
+type HomeSearch = { preview?: string | string[] }
+type HomeProps = { searchParams?: Promise<HomeSearch> }
+
+function first(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+async function ownerPreviewRequested(searchParams?: Promise<HomeSearch>) {
+  const search = searchParams ? await searchParams : undefined
+  if (first(search?.preview) !== '1') return false
+  const { profile } = await currentProfile()
+  return profile?.role === 'owner'
+}
+
+export async function generateMetadata({ searchParams }: HomeProps): Promise<Metadata> {
+  const search = searchParams ? await searchParams : undefined
+  if (first(search?.preview) === '1') {
+    return {
+      alternates: { canonical: '/' },
+      robots: { index: false, follow: false, noarchive: true, nocache: true },
+    }
+  }
+  return {}
+}
+
 function WithBreak({ text }: { text: string }) {
   const parts = text.split(/\n/)
   return <>{parts.map((part, index) => <span key={`${part}-${index}`}>{part}{index < parts.length - 1 ? <br /> : null}</span>)}</>
@@ -28,7 +55,8 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat('en', { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' }).format(new Date(value))
 }
 
-export default async function Home() {
+export default async function Home({ searchParams }: HomeProps) {
+  const preview = await ownerPreviewRequested(searchParams)
   const [navigation, settings, homePage, shelfPages, notes, research, projects] = await Promise.all([
     getNavigation(),
     getSettings([
@@ -42,16 +70,16 @@ export default async function Home() {
       'planet_note_bottom',
       'hero_media_id',
     ]),
-    getPageBySlug('home'),
-    getPagesBySlugs(['research', 'projects', 'photos', 'music']),
-    getCollectionItems('note'),
-    getCollectionItems('research'),
-    getCollectionItems('project'),
+    getPageBySlug('home', { includeDrafts: preview }),
+    getPagesBySlugs(['research', 'projects', 'photos', 'music'], { includeDrafts: preview }),
+    getCollectionItems('note', { includeDrafts: preview }),
+    getCollectionItems('research', { includeDrafts: preview }),
+    getCollectionItems('project', { includeDrafts: preview }),
   ])
 
   const heroMediaId = typeof settings.hero_media_id === 'string' ? settings.hero_media_id : null
   const [blocks, heroMedia] = await Promise.all([
-    homePage ? getPageBlocks(homePage.id) : Promise.resolve([]),
+    homePage ? getPageBlocks(homePage.id, { includeDrafts: preview }) : Promise.resolve([]),
     getMediaAsset(heroMediaId),
   ])
 
@@ -86,6 +114,12 @@ export default async function Home() {
 
   return (
     <PublicFrame navigation={navigation} activeHref="/">
+      {preview ? (
+        <div className="draft-preview-banner">
+          <span>OWNER PREVIEW · HOMEPAGE · DRAFT BLOCKS / CONTENT INCLUDED</span>
+          <Link href="/studio/pages">Back to Studio →</Link>
+        </div>
+      ) : null}
       <section className="hero-desk">
         <div className={`hero-photo${heroMedia ? ' has-real-media' : ''}`} aria-label={heroMedia?.alt_text || 'Personal hero photo'}>
           {heroMedia ? (
@@ -108,23 +142,24 @@ export default async function Home() {
         </div>
 
         <aside className="doing-note">
-          <div className="pin-row"><i /> <strong>NOW</strong></div>
+          <div className="pin-row"><i /> <strong>NOW{preview && currentBlock && !currentBlock.published ? ' · DRAFT' : ''}</strong></div>
           <ul>
             {(doing.length ? doing : ['正在整理这个网站。']).map((item) => <li key={item}><span />{item}</li>)}
           </ul>
-          <Link className="tiny-route-link" href="/now">Open /now →</Link>
+          <Link className="tiny-route-link" href={`/now${preview ? '?preview=1' : ''}`}>Open /now →</Link>
         </aside>
       </section>
 
       <section className="shelf-grid">
         {shelfPages.map((item) => {
           const ui = shelfUi[item.slug] || { tags: '', tone: item.slug }
+          const href = `/${item.slug}${preview && !item.published ? '?preview=1' : ''}`
           return (
-            <Link className="shelf-card" href={`/${item.slug}`} key={item.id}>
+            <Link className="shelf-card" href={href} key={item.id}>
               <div className={`shelf-visual ${ui.tone}`} aria-hidden="true"><span>{item.nav_label || item.title}</span></div>
               <div className="shelf-heading"><h2>{item.nav_label || item.title}</h2><span>→</span></div>
               <p>{item.summary}</p>
-              <small>{ui.tags}</small>
+              <small>{ui.tags}{preview && !item.published ? '   #DRAFT' : ''}</small>
             </Link>
           )
         })}
@@ -137,25 +172,28 @@ export default async function Home() {
             <p>最近写下、推进或整理的东西。</p>
           </div>
           <div className="home-recent-list">
-            {recent.map(({ item, section, label }) => (
-              <Link href={`/${section}/${item.slug}`} className="home-recent-item" key={`${section}-${item.id}`}>
-                <div>
-                  <span className="micro-label">{label}</span>
-                  <h2>{item.title}</h2>
-                  {item.summary ? <p>{item.summary}</p> : null}
-                </div>
-                <div className="home-recent-meta">
-                  {formatDate(item.published_at || item.created_at) ? <time dateTime={item.published_at || item.created_at}>{formatDate(item.published_at || item.created_at)}</time> : null}
-                  {item.tags?.slice(0, 3).map((tag) => <span key={tag}>#{tag}</span>)}
-                </div>
-                <span className="home-recent-arrow">→</span>
-              </Link>
-            ))}
+            {recent.map(({ item, section, label }) => {
+              const href = `/${section}/${item.slug}${preview && !item.published ? '?preview=1' : ''}`
+              return (
+                <Link href={href} className="home-recent-item" key={`${section}-${item.id}`}>
+                  <div>
+                    <span className="micro-label">{label}{preview && !item.published ? ' · DRAFT' : ''}</span>
+                    <h2>{item.title}</h2>
+                    {item.summary ? <p>{item.summary}</p> : null}
+                  </div>
+                  <div className="home-recent-meta">
+                    {item.published && formatDate(item.published_at || item.created_at) ? <time dateTime={item.published_at || item.created_at}>{formatDate(item.published_at || item.created_at)}</time> : null}
+                    {item.tags?.slice(0, 3).map((tag) => <span key={tag}>#{tag}</span>)}
+                  </div>
+                  <span className="home-recent-arrow">→</span>
+                </Link>
+              )
+            })}
           </div>
         </section>
       ) : null}
 
-      <Link className="notes-board" href="/notes">
+      <Link className="notes-board" href={`/notes${preview ? '?preview=1' : ''}`}>
         <div className="paper-strip">
           <span className="paperclip" aria-hidden="true">⌁</span>
           <p className="hand-note">{notesNote}</p>
