@@ -126,15 +126,19 @@ export async function getCollectionItems(contentType: string): Promise<ContentIt
   return (data ?? []) as ContentItem[]
 }
 
-export async function getContentItem(contentType: string, slug: string): Promise<ContentItem | null> {
+export async function getContentItem(
+  contentType: string,
+  slug: string,
+  options: { includeDrafts?: boolean } = {},
+): Promise<ContentItem | null> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('content_items')
     .select(CONTENT_SELECT)
     .eq('content_type', contentType)
     .eq('slug', slug)
-    .eq('published', true)
-    .maybeSingle()
+  if (!options.includeDrafts) query = query.eq('published', true)
+  const { data, error } = await query.maybeSingle()
   if (error) return null
   return data as ContentItem | null
 }
